@@ -59,15 +59,46 @@ async def descargar_receta(evolucion_id: UUID, service: MedicalService = Depends
             
         medico_nombre = f"{medico.get('nombre', 'Médico')} {medico.get('apellido', '')}"
         matricula = medico.get('matricula', 'S/M')
+        especialidad = medico.get('especialidad', 'General')
+        matricula_especialidad = medico.get('matricula_especialidad')
+        telefono_consultorio = medico.get('telefono_consultorio')
+        direccion_consultorio = medico.get('direccion_consultorio')
         firma_url = medico.get('firma_url')
         print(f"DEBUG: Firma URL encontrada en DB: {firma_url}")
+
         paciente_nombre = f"{paciente.get('nombre', 'Paciente')} {paciente.get('apellido', '')}"
+        paciente_dni = paciente.get('dni', 'S/D')
+        paciente_fecha_nac = paciente.get('fecha_nacimiento')
+        
+        # Obtener nombre de obra social
+        obra_social_id = paciente.get('obra_social_id')
+        obra_social_nombre = "S/D"
+        if obra_social_id:
+            os_res = client.table("obras_sociales").select("nombre").eq("id", str(obra_social_id)).execute()
+            if os_res.data:
+                obra_social_nombre = os_res.data[0]['nombre']
+        
+        paciente_nro_afiliado = paciente.get('nro_afiliado', 'S/D')
         contenido = data.get('contenido', '')
 
         # 2. Generar PDF
         print(f"DEBUG: Iniciando generación de PDF para {paciente_nombre}")
         pdf_service = PDFService()
-        pdf_buffer = pdf_service.generar_receta(medico_nombre, matricula, paciente_nombre, contenido, firma_url)
+        pdf_buffer = pdf_service.generar_receta(
+            medico_nombre=medico_nombre, 
+            matricula=matricula, 
+            paciente_nombre=paciente_nombre, 
+            contenido=contenido, 
+            firma_url=firma_url,
+            especialidad=especialidad,
+            matricula_especialidad=matricula_especialidad,
+            telefono_consultorio=telefono_consultorio,
+            direccion_consultorio=direccion_consultorio,
+            paciente_dni=paciente_dni,
+            paciente_fecha_nac=paciente_fecha_nac,
+            paciente_os=obra_social_nombre,
+            paciente_nro_afiliado=paciente_nro_afiliado
+        )
         
         print("DEBUG: PDF generado exitosamente")
         return Response(

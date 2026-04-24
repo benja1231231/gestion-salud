@@ -20,6 +20,9 @@ CREATE TABLE IF NOT EXISTS medicos (
     apellido TEXT NOT NULL,
     matricula TEXT UNIQUE NOT NULL,
     especialidad TEXT,
+    matricula_especialidad TEXT,
+    telefono_consultorio TEXT,
+    direccion_consultorio TEXT,
     firma_url TEXT,
     config_agenda JSONB DEFAULT '{"duracion_turno": 15, "inicio": "08:00", "fin": "20:00", "dias_laborales": [1,2,3,4,5]}'::jsonb,
     created_at TIMESTAMPTZ DEFAULT NOW()

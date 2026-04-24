@@ -8,9 +8,10 @@ export type EstadoTurno = "pendiente" | "llegó" | "en_espera" | "en_consultorio
 interface WaitingRoomProps {
   turnos: any[]
   onUpdate: () => void
+  onVerHC: (paciente: any) => void
 }
 
-export default function WaitingRoom({ turnos, onUpdate }: WaitingRoomProps) {
+export default function WaitingRoom({ turnos, onUpdate, onVerHC }: WaitingRoomProps) {
   const supabase = createClient()
 
   const cambiarEstado = async (id: string, nuevoEstado: EstadoTurno) => {
@@ -101,11 +102,14 @@ export default function WaitingRoom({ turnos, onUpdate }: WaitingRoomProps) {
               )}
               {t.estado === "en_espera" && (
                 <button 
-                  onClick={() => cambiarEstado(t.id, "en_consultorio")}
+                  onClick={() => {
+                    cambiarEstado(t.id, "en_consultorio");
+                    onVerHC(t.pacientes);
+                  }}
                   className="flex-1 text-[11px] py-1.5 rounded bg-primary text-white hover:opacity-90 font-bold flex items-center justify-center gap-1 transition shadow-lg shadow-primary/20"
                 >
                   <PlayCircle className="w-3 h-3" />
-                  Llamar
+                  Llamar y Ver HC
                 </button>
               )}
               {t.estado === "en_consultorio" && (

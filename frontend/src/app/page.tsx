@@ -24,7 +24,14 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [medicoId, setMedicoId] = useState<string | null>(null);
   const [medicoConfig, setMedicoConfig] = useState<any>(null);
-  const [medicoInfo, setMedicoInfo] = useState<{matricula: string, especialidad: string, firma_url?: string}>({matricula: "", especialidad: ""});
+  const [medicoInfo, setMedicoInfo] = useState<{
+    matricula: string, 
+    especialidad: string, 
+    matricula_especialidad?: string,
+    telefono_consultorio?: string,
+    direccion_consultorio?: string,
+    firma_url?: string
+  }>({matricula: "", especialidad: ""});
   const supabase = createClient();
   const router = useRouter();
 
@@ -63,6 +70,9 @@ export default function Dashboard() {
           setMedicoInfo({
             matricula: medico.matricula,
             especialidad: medico.especialidad,
+            matricula_especialidad: medico.matricula_especialidad,
+            telefono_consultorio: medico.telefono_consultorio,
+            direccion_consultorio: medico.direccion_consultorio,
             firma_url: medico.firma_url
           });
         }
@@ -106,6 +116,9 @@ export default function Dashboard() {
       config_agenda: newConfig,
       matricula: formData.get("matricula"),
       especialidad: formData.get("especialidad"),
+      matricula_especialidad: formData.get("matricula_especialidad"),
+      telefono_consultorio: formData.get("telefono_consultorio"),
+      direccion_consultorio: formData.get("direccion_consultorio"),
       firma_url
     };
 
@@ -119,6 +132,9 @@ export default function Dashboard() {
       setMedicoInfo({
         matricula: updatedData.matricula as string,
         especialidad: updatedData.especialidad as string,
+        matricula_especialidad: updatedData.matricula_especialidad as string,
+        telefono_consultorio: updatedData.telefono_consultorio as string,
+        direccion_consultorio: updatedData.direccion_consultorio as string,
         firma_url
       });
       alert("Configuración actualizada");
@@ -576,7 +592,14 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="col-span-12 lg:col-span-4 space-y-8">
-              <WaitingRoom turnos={turnos} onUpdate={fetchTurnos} />
+              <WaitingRoom 
+                turnos={turnos} 
+                onUpdate={fetchTurnos} 
+                onVerHC={(p) => {
+                  setSelectedPaciente(p);
+                  setActiveTab("Historias Clínicas");
+                }}
+              />
             </div>
           </div>
         );
@@ -796,6 +819,22 @@ export default function Dashboard() {
                     <label className="text-xs font-bold text-slate-500 uppercase">Especialidad</label>
                     <input name="especialidad" type="text" defaultValue={medicoInfo.especialidad} className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" placeholder="Cardiología" required />
                   </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase">Matrícula de Especialidad (M.E.)</label>
+                    <input name="matricula_especialidad" type="text" defaultValue={medicoInfo.matricula_especialidad} className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" placeholder="M.E. 67890" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase">Teléfono de Consultorio</label>
+                    <input name="telefono_consultorio" type="tel" defaultValue={medicoInfo.telefono_consultorio} className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" placeholder="+54 11 1234-5678" />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase">Dirección del Establecimiento</label>
+                  <input name="direccion_consultorio" type="text" defaultValue={medicoInfo.direccion_consultorio} className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" placeholder="Av. Principal 123, Ciudad" />
                 </div>
 
                 <div className="space-y-2">
@@ -1097,16 +1136,6 @@ export default function Dashboard() {
                 className="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors"
               >
                 Editar
-              </button>
-              <button 
-                onClick={() => {
-                  setSelectedPaciente(selectedTurno.pacientes);
-                  setActiveTab("Historias Clínicas");
-                  setIsModalOpen(false);
-                }}
-                className="flex-1 bg-primary text-white py-3 rounded-xl font-bold text-sm hover:opacity-90 transition shadow-lg shadow-primary/20"
-              >
-                Ver HC
               </button>
             </div>
           </div>
