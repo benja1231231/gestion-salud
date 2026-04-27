@@ -63,3 +63,12 @@ class MedicalRepository:
     async def get_evoluciones_by_paciente(self, paciente_id: UUID) -> List[dict]:
         res = self.client.table("evoluciones").select("*").eq("paciente_id", str(paciente_id)).execute()
         return res.data
+
+    # Bloqueos
+    async def get_bloqueos_by_medico_and_fecha(self, medico_id: UUID, fecha: str) -> List[dict]:
+        res = self.client.table("bloqueos_agenda")\
+            .select("*")\
+            .eq("medico_id", str(medico_id))\
+            .eq("fecha", fecha)\
+            .execute()
+        return res.data

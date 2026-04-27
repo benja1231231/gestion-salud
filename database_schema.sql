@@ -104,6 +104,25 @@ CREATE POLICY "Pacientes: Acceso por medico" ON pacientes FOR ALL USING (
 -- Evoluciones: Solo el médico tratante
 CREATE POLICY "Evoluciones: Acceso por medico" ON evoluciones FOR ALL USING (medico_id = auth.uid());
 
+-- Bloqueos de Agenda
+CREATE TABLE IF NOT EXISTS bloqueos_agenda (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    medico_id UUID REFERENCES medicos(id) ON DELETE CASCADE,
+    fecha DATE NOT NULL,
+    hora_inicio TIME, -- NULL si es bloqueo de día completo
+    hora_fin TIME,    -- NULL si es bloqueo de día completo
+    tipo TEXT CHECK (tipo IN ('parcial', 'feriado')),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(medico_id, fecha, extra_id, hora_inicio, hora_fin)
+);
+
+-- RLS para Bloqueos
+ALTER TABLE bloqueos_agenda ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Bloqueos: Ver propios" ON bloqueos_agenda FOR SELECT USING (auth.uid() = medico_id);
+CREATE POLICY "Bloqueos: Gestionar propios" ON bloqueos_agenda FOR ALL USING (auth.uid() = medico_id);
+CREATE POLICY "Bloqueos: Ver publico" ON bloqueos_agenda FOR SELECT USING (true); -- Necesario para el turnero publico
+
 -- 5. INDEXACIÓN PARA PERFORMANCE
 CREATE INDEX IF NOT EXISTS idx_turnos_medico_fecha ON turnos(medico_id, fecha_hora);
 CREATE INDEX IF NOT EXISTS idx_pacientes_dni ON pacientes(dni);

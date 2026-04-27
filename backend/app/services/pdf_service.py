@@ -27,10 +27,7 @@ class PDFService:
         c = canvas.Canvas(buffer, pagesize=A5)
         width, height = A5
 
-        # --- ENCABEZADO MÉDICO ---
-        c.setFont("Helvetica-Bold", 16)
-        c.drawCentredString(width/2, height - 1.5*cm, "RECETA MÉDICA")
-        
+        # --- ENCABEZADO MÉDICO --- 
         c.setFont("Helvetica-Bold", 11)
         c.drawString(1*cm, height - 2.5*cm, f"Dr/Dra: {medico_nombre}")
         

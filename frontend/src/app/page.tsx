@@ -12,8 +12,10 @@ import { QRCodeSVG } from "qrcode.react";
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Agenda");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState<"paciente" | "turno" | "evolucion" | "detalle_turno" | "editar_paciente" | "editar_turno" | "obra_social" | "editar_obra_social">("turno");
+  const [modalType, setModalType] = useState<"paciente" | "turno" | "evolucion" | "detalle_turno" | "editar_paciente" | "editar_turno" | "obra_social" | "editar_obra_social" | "bloqueos">("turno");
   const [selectedTurno, setSelectedTurno] = useState<any>(null);
+  const [selectedDateForBloqueo, setSelectedDateForBloqueo] = useState<string | null>(null);
+  const [bloqueos, setBloqueos] = useState<any[]>([]);
   const [selectedPaciente, setSelectedPaciente] = useState<any>(null);
   const [selectedOS, setSelectedOS] = useState<any>(null);
   const [pacientes, setPacientes] = useState<any[]>([]);
@@ -229,11 +231,52 @@ export default function Dashboard() {
     if (data) setObrasSociales(data);
   };
 
+  const handleCreateBloqueo = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const tipo = formData.get("tipo") as "parcial" | "feriado";
+    
+    const newBloqueo = {
+      medico_id: medicoId,
+      fecha: selectedDateForBloqueo,
+      tipo,
+      hora_inicio: tipo === "parcial" ? formData.get("hora_inicio") : null,
+      hora_fin: tipo === "parcial" ? formData.get("hora_fin") : null
+    };
+
+    const { error } = await supabase.from("bloqueos_agenda").insert([newBloqueo]);
+    if (!error) {
+      setIsModalOpen(false);
+      fetchBloqueos();
+    } else {
+      alert("Error al crear bloqueo: " + error.message);
+    }
+  };
+
+  const handleDeleteBloqueo = async (id: string) => {
+    const { error } = await supabase.from("bloqueos_agenda").delete().eq("id", id);
+    if (!error) {
+      fetchBloqueos();
+    }
+  };
+
+  const fetchBloqueos = async () => {
+    if (!medicoId) return;
+    const { data } = await supabase
+      .from("bloqueos_agenda")
+      .select("*")
+      .eq("medico_id", medicoId);
+    if (data) setBloqueos(data);
+  };
+
   useEffect(() => {
-    fetchPacientes();
-    fetchTurnos();
-    fetchObrasSociales();
-  }, [currentDate]);
+    if (medicoId) {
+      fetchPacientes();
+      fetchTurnos();
+      fetchObrasSociales();
+      fetchBloqueos();
+    }
+  }, [currentDate, medicoId]);
 
   useEffect(() => {
     if (selectedPaciente) {
@@ -506,7 +549,7 @@ export default function Dashboard() {
     router.refresh();
   };
 
-  const handleOpenModal = (type: "paciente" | "turno" | "evolucion" | "editar_paciente" | "editar_turno" | "obra_social" | "editar_obra_social") => {
+  const handleOpenModal = (type: "paciente" | "turno" | "evolucion" | "detalle_turno" | "editar_paciente" | "editar_turno" | "obra_social" | "editar_obra_social" | "bloqueos") => {
     setModalType(type);
     setIsModalOpen(true);
   };
@@ -552,20 +595,34 @@ export default function Dashboard() {
                       return tDate.getDate() === day && tDate.getMonth() === month && tDate.getFullYear() === year;
                     }) : [];
                     
+                    const dateStr = day ? `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : null;
+                    const isFeriado = bloqueos.some(b => b.fecha === dateStr && b.tipo === 'feriado');
+                    const hasBloqueos = bloqueos.some(b => b.fecha === dateStr && b.tipo === 'parcial');
+                    
                     return (
                       <div 
                         key={i} 
-                        className={`aspect-square p-2 border-b border-r border-slate-100 transition-colors relative group ${day ? 'hover:bg-slate-50/50 cursor-pointer' : 'bg-slate-50/20'}`}
+                        onContextMenu={(e) => {
+                          if (!day) return;
+                          e.preventDefault();
+                          setSelectedDateForBloqueo(dateStr);
+                          handleOpenModal("bloqueos");
+                        }}
+                        className={`aspect-square p-2 border-b border-r border-slate-100 transition-colors relative group ${day ? 'hover:bg-slate-50/50 cursor-pointer' : 'bg-slate-50/20'} ${isFeriado ? 'bg-red-50/50' : ''}`}
                       >
                         {day && (
                           <>
-                            <span className={`text-xs font-medium transition-colors ${
-                              day === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear()
-                              ? 'text-primary bg-primary/10 w-6 h-6 flex items-center justify-center rounded-full font-bold' 
-                              : 'text-slate-400 group-hover:text-primary'
-                            }`}>
-                              {day}
-                            </span>
+                            <div className="flex justify-between items-start">
+                              <span className={`text-xs font-medium transition-colors ${
+                                day === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear()
+                                ? 'text-primary bg-primary/10 w-6 h-6 flex items-center justify-center rounded-full font-bold' 
+                                : 'text-slate-400 group-hover:text-primary'
+                              }`}>
+                                {day}
+                              </span>
+                              {isFeriado && <div className="text-[8px] bg-red-100 text-red-600 px-1 rounded font-bold uppercase">Feriado</div>}
+                              {hasBloqueos && !isFeriado && <Clock className="w-3 h-3 text-amber-400" />}
+                            </div>
                             <div className="mt-1 space-y-1 overflow-y-auto max-h-[80%] scrollbar-hide">
                               {dayTurnos.filter(t => t.estado !== 'cancelado').map(t => (
                                 <div 
@@ -1093,10 +1150,61 @@ export default function Dashboard() {
           modalType === "detalle_turno" ? "Detalles del Turno" :
           modalType === "obra_social" ? "Nueva Obra Social" :
           modalType === "editar_obra_social" ? "Editar Obra Social" :
+          modalType === "bloqueos" ? `Gestionar Bloqueos - ${selectedDateForBloqueo}` :
           "Nueva Evolución Médica"
         }
       >
-        {modalType === "detalle_turno" ? (
+        {modalType === "bloqueos" ? (
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <h3 className="text-sm font-bold text-slate-700 uppercase">Bloqueos Activos</h3>
+              <div className="space-y-2">
+                {bloqueos.filter(b => b.fecha === selectedDateForBloqueo).length === 0 ? (
+                  <p className="text-xs text-slate-400 italic">No hay bloqueos para este día.</p>
+                ) : (
+                  bloqueos.filter(b => b.fecha === selectedDateForBloqueo).map(b => (
+                    <div key={b.id} className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100">
+                      <div>
+                        <p className="text-sm font-bold text-slate-700">
+                          {b.tipo === "feriado" ? "Día Feriado" : `Bloqueo: ${b.hora_inicio.slice(0,5)} - ${b.hora_fin.slice(0,5)}`}
+                        </p>
+                      </div>
+                      <button onClick={() => handleDeleteBloqueo(b.id)} className="text-red-500 hover:text-red-700 p-1">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <form onSubmit={handleCreateBloqueo} className="pt-6 border-t border-slate-100 space-y-4">
+              <h3 className="text-sm font-bold text-slate-700 uppercase">Nuevo Bloqueo</h3>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-500 uppercase">Tipo de Bloqueo</label>
+                <select name="tipo" className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" required>
+                  <option value="parcial">Bloqueo de Horario</option>
+                  <option value="feriado">Día Feriado (Cerrado)</option>
+                </select>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase">Hora Inicio</label>
+                  <input name="hora_inicio" type="time" className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase">Hora Fin</label>
+                  <input name="hora_fin" type="time" className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" />
+                </div>
+              </div>
+              
+              <button type="submit" className="w-full bg-primary text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition">
+                Aplicar Bloqueo
+              </button>
+            </form>
+          </div>
+        ) : modalType === "detalle_turno" ? (
           <div className="space-y-6">
             <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
               <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">

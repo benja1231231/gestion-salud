@@ -91,6 +91,12 @@ async def get_disponibilidad(medico_id: UUID, fecha: str, service: AgendaService
     if dia_semana_js not in config.get("dias_laborales", []):
         return [] # No atiende este día
 
+    # 3.1. Validar bloqueos
+    bloqueos = await service.repository.get_bloqueos_by_medico_and_fecha(medico_id, fecha)
+    # Si hay un bloqueo de tipo 'feriado', el día está cerrado
+    if any(b["tipo"] == "feriado" for b in bloqueos):
+        return []
+
     inicio_dia = fecha_dt.replace(hour=0, minute=0, second=0)
     fin_dia = inicio_dia.replace(hour=23, minute=59, second=59)
     
@@ -106,9 +112,20 @@ async def get_disponibilidad(medico_id: UUID, fecha: str, service: AgendaService
     current = fecha_dt.replace(hour=h_inicio, minute=m_inicio)
     while current.hour < h_fin or (current.hour == h_fin and current.minute < m_fin):
         slot_iso = current.isoformat()
-        # Verificación de solapamiento
+        current_time_str = current.strftime("%H:%M:%S")
+        
+        # Verificación de solapamiento con turnos
         is_taken = any(slot_iso in h or h in slot_iso for h in horas_ocupadas)
-        slots.append({"hora": current.strftime("%H:%M"), "disponible": not is_taken})
+        
+        # Verificación de bloqueos parciales
+        is_blocked = False
+        for b in bloqueos:
+            if b["tipo"] == "parcial" and b["hora_inicio"] and b["hora_fin"]:
+                if b["hora_inicio"] <= current_time_str < b["hora_fin"]:
+                    is_blocked = True
+                    break
+        
+        slots.append({"hora": current.strftime("%H:%M"), "disponible": not is_taken and not is_blocked})
         current += timedelta(minutes=duracion)
     
     return slots
