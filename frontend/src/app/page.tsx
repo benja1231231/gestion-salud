@@ -15,6 +15,7 @@ export default function Dashboard() {
   const [modalType, setModalType] = useState<"paciente" | "turno" | "evolucion" | "detalle_turno" | "editar_paciente" | "editar_turno" | "obra_social" | "editar_obra_social" | "bloqueos">("turno");
   const [selectedTurno, setSelectedTurno] = useState<any>(null);
   const [selectedDateForBloqueo, setSelectedDateForBloqueo] = useState<string | null>(null);
+  const [bloqueoTipo, setBloqueoTipo] = useState<"parcial" | "feriado">("parcial");
   const [bloqueos, setBloqueos] = useState<any[]>([]);
   const [selectedPaciente, setSelectedPaciente] = useState<any>(null);
   const [selectedOS, setSelectedOS] = useState<any>(null);
@@ -529,6 +530,25 @@ export default function Dashboard() {
     const day = new Date(year, month, 1).getDay();
     // Ajustar para que lunes sea 0, domingo sea 6
     return day === 0 ? 6 : day - 1;
+  };
+
+  const getAvailableHours = () => {
+    if (!medicoConfig) return [];
+    const [h_inicio, m_inicio] = medicoConfig.inicio.split(":").map(Number);
+    const [h_fin, m_fin] = medicoConfig.fin.split(":").map(Number);
+    const duracion = medicoConfig.duracion_turno;
+
+    const hours = [];
+    let current = new Date();
+    current.setHours(h_inicio, m_inicio, 0, 0);
+    const end = new Date();
+    end.setHours(h_fin, m_fin, 0, 0);
+
+    while (current <= end) {
+      hours.push(current.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }));
+      current.setMinutes(current.getMinutes() + duracion);
+    }
+    return hours;
   };
 
   const filteredPacientes = pacientes.filter(p => 
@@ -1182,25 +1202,41 @@ export default function Dashboard() {
               <h3 className="text-sm font-bold text-slate-700 uppercase">Nuevo Bloqueo</h3>
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-500 uppercase">Tipo de Bloqueo</label>
-                <select name="tipo" className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" required>
+                <select 
+                  name="tipo" 
+                  value={bloqueoTipo}
+                  onChange={(e) => setBloqueoTipo(e.target.value as "parcial" | "feriado")}
+                  className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" 
+                  required
+                >
                   <option value="parcial">Bloqueo de Horario</option>
                   <option value="feriado">Día Feriado (Cerrado)</option>
                 </select>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Hora Inicio</label>
-                  <input name="hora_inicio" type="time" className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" />
+              {bloqueoTipo === "parcial" && (
+                <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase">Hora Inicio</label>
+                    <select name="hora_inicio" className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" required>
+                      {getAvailableHours().slice(0, -1).map(h => (
+                        <option key={h} value={h}>{h} hs</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase">Hora Fin</label>
+                    <select name="hora_fin" className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" required>
+                      {getAvailableHours().slice(1).map(h => (
+                        <option key={h} value={h}>{h} hs</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Hora Fin</label>
-                  <input name="hora_fin" type="time" className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" />
-                </div>
-              </div>
+              )}
               
               <button type="submit" className="w-full bg-primary text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition">
-                Aplicar Bloqueo
+                {bloqueoTipo === "feriado" ? "Marcar como Feriado" : "Aplicar Bloqueo de Horario"}
               </button>
             </form>
           </div>
