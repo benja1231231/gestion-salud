@@ -40,3 +40,6 @@ class Evolucion(EvolucionBase):
 
     class Config:
         from_attributes = True
+
+class RecetaRequest(BaseModel):
+    contenido: str

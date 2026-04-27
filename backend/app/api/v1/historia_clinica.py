@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Response
 from typing import List
 from uuid import UUID
-from app.models.medical import EvolucionCreate, Evolucion
+from app.models.medical import EvolucionCreate, Evolucion, RecetaRequest
 from app.services.medical_service import MedicalService
 from app.repositories.medical_repo import MedicalRepository
 from app.core.supabase import get_supabase
@@ -27,6 +27,13 @@ async def agregar_evolucion(evolucion: EvolucionCreate, service: MedicalService 
 
 @router.get("/receta/{evolucion_id}")
 async def descargar_receta(evolucion_id: UUID, service: MedicalService = Depends(get_service)):
+    return await _generar_receta_pdf(evolucion_id, None)
+
+@router.post("/receta/{evolucion_id}")
+async def descargar_receta_personalizada(evolucion_id: UUID, request: RecetaRequest, service: MedicalService = Depends(get_service)):
+    return await _generar_receta_pdf(evolucion_id, request.contenido)
+
+async def _generar_receta_pdf(evolucion_id: UUID, contenido_personalizado: str = None):
     try:
         print(f"DEBUG: Generando receta para evolucion_id: {evolucion_id}")
         # 1. Obtener datos de la evolución, paciente y médico
@@ -44,7 +51,6 @@ async def descargar_receta(evolucion_id: UUID, service: MedicalService = Depends
             raise HTTPException(status_code=404, detail="Evolución no encontrada")
             
         data = evolucion_res.data[0]
-        print(f"DEBUG: Evolucion data: {data}")
         
         # Obtener médico y paciente por ID directo (más seguro)
         medico_res = client.table("medicos").select("*").eq("id", data['medico_id']).execute()
@@ -54,8 +60,7 @@ async def descargar_receta(evolucion_id: UUID, service: MedicalService = Depends
         paciente = paciente_res.data[0] if paciente_res.data else None
         
         if not medico or not paciente:
-            print(f"DEBUG: Falló recuperación. Medico: {bool(medico)}, Paciente: {bool(paciente)}")
-            raise HTTPException(status_code=404, detail=f"No se encontró el médico ({data['medico_id']}) o el paciente ({data['paciente_id']}) vinculado a esta evolución")
+            raise HTTPException(status_code=404, detail=f"No se encontró el médico o el paciente vinculado a esta evolución")
             
         medico_nombre = f"{medico.get('nombre', 'Médico')} {medico.get('apellido', '')}"
         matricula = medico.get('matricula', 'S/M')
@@ -64,7 +69,6 @@ async def descargar_receta(evolucion_id: UUID, service: MedicalService = Depends
         telefono_consultorio = medico.get('telefono_consultorio')
         direccion_consultorio = medico.get('direccion_consultorio')
         firma_url = medico.get('firma_url')
-        print(f"DEBUG: Firma URL encontrada en DB: {firma_url}")
 
         paciente_nombre = f"{paciente.get('nombre', 'Paciente')} {paciente.get('apellido', '')}"
         paciente_dni = paciente.get('dni', 'S/D')
@@ -79,10 +83,11 @@ async def descargar_receta(evolucion_id: UUID, service: MedicalService = Depends
                 obra_social_nombre = os_res.data[0]['nombre']
         
         paciente_nro_afiliado = paciente.get('nro_afiliado', 'S/D')
-        contenido = data.get('contenido', '')
+        
+        # Usar contenido personalizado si se proporciona, de lo contrario usar el de la evolución
+        contenido = contenido_personalizado if contenido_personalizado is not None else data.get('contenido', '')
 
         # 2. Generar PDF
-        print(f"DEBUG: Iniciando generación de PDF para {paciente_nombre}")
         pdf_service = PDFService()
         pdf_buffer = pdf_service.generar_receta(
             medico_nombre=medico_nombre, 
@@ -100,7 +105,6 @@ async def descargar_receta(evolucion_id: UUID, service: MedicalService = Depends
             paciente_nro_afiliado=paciente_nro_afiliado
         )
         
-        print("DEBUG: PDF generado exitosamente")
         return Response(
             content=pdf_buffer.getvalue(),
             media_type="application/pdf",

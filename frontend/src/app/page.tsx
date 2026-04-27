@@ -22,6 +22,8 @@ export default function Dashboard() {
   const [pacientes, setPacientes] = useState<any[]>([]);
   const [turnos, setTurnos] = useState<any[]>([]);
   const [evoluciones, setEvoluciones] = useState<any[]>([]);
+  const [creatingRecetaFor, setCreatingRecetaFor] = useState<string | null>(null);
+  const [recetaContent, setRecetaContent] = useState<string>("");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -829,28 +831,63 @@ export default function Dashboard() {
                           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                             {new Date(e.created_at).toLocaleString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                           </span>
-                          <button 
-                            onClick={async () => {
-                              try {
-                                 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-                                 const res = await fetch(`${apiUrl}/api/v1/historia-clinica/receta/${e.id}`);
-                                 if (!res.ok) throw new Error("Error al generar PDF");
-                                const blob = await res.blob();
-                                const url = window.URL.createObjectURL(blob);
-                                const a = document.createElement('a');
-                                a.href = url;
-                                a.download = `receta_${selectedPaciente.nombre}_${new Date(e.created_at).toLocaleDateString()}.pdf`;
-                                a.click();
-                                window.URL.revokeObjectURL(url);
-                              } catch (err) {
-                                alert("Error: No se pudo conectar con el servidor de recetas.");
-                                console.error(err);
-                              }
-                            }}
-                            className="text-xs text-primary font-bold flex items-center gap-1 hover:underline"
-                          >
-                            <FileText className="w-3 h-3" /> Descargar Receta
-                          </button>
+                          {creatingRecetaFor === e.id ? (
+                            <div className="flex flex-col gap-2 w-full mt-2 bg-white p-4 rounded-xl border border-primary/20 shadow-sm">
+                              <label className="text-[10px] font-bold text-primary uppercase">Contenido de la Receta</label>
+                              <textarea
+                                className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-1 focus:ring-primary"
+                                placeholder="Escribe la receta aquí..."
+                                value={recetaContent}
+                                onChange={(ev) => setRecetaContent(ev.target.value)}
+                                rows={4}
+                              />
+                              <div className="flex justify-end gap-2">
+                                <button 
+                                  onClick={() => setCreatingRecetaFor(null)}
+                                  className="text-xs text-slate-500 font-bold hover:underline"
+                                >
+                                  Cancelar
+                                </button>
+                                <button 
+                                  onClick={async () => {
+                                    try {
+                                      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+                                      const res = await fetch(`${apiUrl}/api/v1/historia-clinica/receta/${e.id}`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ contenido: recetaContent })
+                                      });
+                                      if (!res.ok) throw new Error("Error al generar PDF");
+                                      const blob = await res.blob();
+                                      const url = window.URL.createObjectURL(blob);
+                                      const a = document.createElement('a');
+                                      a.href = url;
+                                      a.download = `receta_${selectedPaciente.nombre}_${new Date(e.created_at).toLocaleDateString()}.pdf`;
+                                      a.click();
+                                      window.URL.revokeObjectURL(url);
+                                      setCreatingRecetaFor(null);
+                                    } catch (err) {
+                                      alert("Error: No se pudo conectar con el servidor de recetas.");
+                                      console.error(err);
+                                    }
+                                  }}
+                                  className="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 hover:bg-primary/90 transition"
+                                >
+                                  <Download className="w-3 h-3" /> Descargar PDF
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <button 
+                              onClick={() => {
+                                setCreatingRecetaFor(e.id);
+                                setRecetaContent(e.contenido);
+                              }}
+                              className="text-xs text-primary font-bold flex items-center gap-1 hover:underline"
+                            >
+                              <FileText className="w-3 h-3" /> Crear nueva receta
+                            </button>
+                          )}
                         </div>
                         <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
                           <p className="text-sm text-slate-700 leading-relaxed">
