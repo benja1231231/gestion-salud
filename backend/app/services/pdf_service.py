@@ -61,7 +61,7 @@ class PDFService:
                 today = date.today()
                 age = today.getFullYear() - birth.getFullYear() - ((today.getMonth(), today.getDate()) < (birth.getMonth(), birth.getDate()))
                 edad_str = f"{age} años"
-            except:
+            except Exception:
                 pass
         
         c.drawString(1*cm, height - 5.5*cm, f"DNI: {paciente_dni} | Edad: {edad_str}")

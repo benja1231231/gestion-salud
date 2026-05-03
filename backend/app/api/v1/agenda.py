@@ -1,6 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter
 from app.models.turno import TurnoCreate, Turno
-from app.services.agenda_service import AgendaService
 # from app.repositories.turno_repo import TurnoRepository
 
 router = APIRouter()
