@@ -127,6 +127,7 @@ CREATE POLICY "Bloqueos: Ver publico" ON bloqueos_agenda FOR SELECT USING (true)
 CREATE INDEX IF NOT EXISTS idx_turnos_medico_fecha ON turnos(medico_id, fecha_hora);
 CREATE INDEX IF NOT EXISTS idx_pacientes_dni ON pacientes(dni);
 CREATE INDEX IF NOT EXISTS idx_evoluciones_paciente ON evoluciones(paciente_id);
+CREATE INDEX IF NOT EXISTS idx_evoluciones_created_at ON evoluciones(created_at DESC);
 
 -- 6. AUTOMATIZACIÓN (TRIGGERS)
 
