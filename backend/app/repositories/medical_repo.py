@@ -2,8 +2,8 @@ from typing import List, Optional
 from uuid import UUID
 from datetime import datetime
 from supabase import Client
-from app.models.medical import PacienteCreate, Paciente, EvolucionCreate, Evolucion
-from app.models.turno import TurnoCreate, Turno
+from app.models.medical import PacienteCreate, EvolucionCreate
+from app.models.turno import TurnoCreate
 
 class MedicalRepository:
     def __init__(self, client: Client):

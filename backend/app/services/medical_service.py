@@ -1,7 +1,6 @@
-from typing import List, Optional
+from typing import List
 from uuid import UUID
-from datetime import datetime, date
-from app.models.medical import PacienteCreate, Paciente, EvolucionCreate, Evolucion
+from app.models.medical import PacienteCreate, EvolucionCreate
 
 from app.repositories.medical_repo import MedicalRepository
 

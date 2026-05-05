@@ -1,5 +1,4 @@
 from datetime import timedelta, datetime
-from typing import List
 from app.models.turno import TurnoCreate, Turno
 from uuid import UUID
 

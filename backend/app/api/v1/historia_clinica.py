@@ -60,7 +60,7 @@ async def _generar_receta_pdf(evolucion_id: UUID, contenido_personalizado: str =
         paciente = paciente_res.data[0] if paciente_res.data else None
         
         if not medico or not paciente:
-            raise HTTPException(status_code=404, detail=f"No se encontró el médico o el paciente vinculado a esta evolución")
+            raise HTTPException(status_code=404, detail="No se encontró el médico o el paciente vinculado a esta evolución")
             
         medico_nombre = f"{medico.get('nombre', 'Médico')} {medico.get('apellido', '')}"
         matricula = medico.get('matricula', 'S/M')

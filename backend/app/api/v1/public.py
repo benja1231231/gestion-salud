@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
-from typing import Optional
 from uuid import UUID
-from datetime import datetime
+from datetime import datetime, timedelta
 from app.models.medical import PacienteCreate, Paciente
-from app.models.turno import TurnoCreate, Turno
+from app.models.turno import TurnoCreate
 from app.services.medical_service import MedicalService
 from app.services.agenda_service import AgendaService
 from app.repositories.medical_repo import MedicalRepository
@@ -129,5 +128,3 @@ async def get_disponibilidad(medico_id: UUID, fecha: str, service: AgendaService
         current += timedelta(minutes=duracion)
     
     return slots
-
-from datetime import timedelta

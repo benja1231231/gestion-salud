@@ -12,7 +12,8 @@ import { QRCodeSVG } from "qrcode.react";
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Agenda");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState<"paciente" | "turno" | "evolucion" | "detalle_turno" | "editar_paciente" | "editar_turno" | "obra_social" | "editar_obra_social" | "bloqueos">("turno");
+  const [modalType, setModalType] = useState<"paciente" | "turno" | "evolucion" | "detalle_turno" | "editar_paciente" | "editar_turno" | "obra_social" | "editar_obra_social" | "bloqueos" | "filtros">("turno");
+  const [filtroObraSocial, setFiltroObraSocial] = useState<string | null>(null);
   const [selectedTurno, setSelectedTurno] = useState<any>(null);
   const [selectedDateForBloqueo, setSelectedDateForBloqueo] = useState<string | null>(null);
   const [bloqueoTipo, setBloqueoTipo] = useState<"parcial" | "feriado">("parcial");
@@ -553,9 +554,11 @@ export default function Dashboard() {
     return hours;
   };
 
-  const filteredPacientes = pacientes.filter(p => 
-    `${p.nombre} ${p.apellido} ${p.dni}`.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredPacientes = pacientes.filter(p => {
+    const matchSearch = `${p.nombre} ${p.apellido} ${p.dni}`.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchObraSocial = filtroObraSocial ? p.obra_social_id === filtroObraSocial : true;
+    return matchSearch && matchObraSocial;
+  });
 
 
   const menuItems = [
@@ -571,7 +574,7 @@ export default function Dashboard() {
     router.refresh();
   };
 
-  const handleOpenModal = (type: "paciente" | "turno" | "evolucion" | "detalle_turno" | "editar_paciente" | "editar_turno" | "obra_social" | "editar_obra_social" | "bloqueos") => {
+  const handleOpenModal = (type: "paciente" | "turno" | "evolucion" | "detalle_turno" | "editar_paciente" | "editar_turno" | "obra_social" | "editar_obra_social" | "bloqueos" | "filtros") => {
     setModalType(type);
     setIsModalOpen(true);
   };
@@ -688,10 +691,20 @@ export default function Dashboard() {
             <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-200">
               <div className="relative w-96">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input type="text" placeholder="Buscar por DNI o Nombre..." className="w-full pl-10 pr-4 py-2 bg-slate-50 border-none rounded-lg text-sm focus:ring-2 ring-primary/20" />
+                <input 
+                  type="text" 
+                  placeholder="Buscar por DNI o Nombre..." 
+                  className="w-full pl-10 pr-4 py-2 bg-slate-50 border-none rounded-lg text-sm focus:ring-2 ring-primary/20"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
               </div>
-              <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition">
+              <button 
+                onClick={() => handleOpenModal("filtros")}
+                className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition"
+              >
                 <Filter className="w-4 h-4" /> Filtros
+                {filtroObraSocial && <span className="bg-primary text-white text-xs px-2 py-0.5 rounded-full">1</span>}
               </button>
             </div>
             <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
@@ -1208,10 +1221,46 @@ export default function Dashboard() {
           modalType === "obra_social" ? "Nueva Obra Social" :
           modalType === "editar_obra_social" ? "Editar Obra Social" :
           modalType === "bloqueos" ? `Gestionar Bloqueos - ${selectedDateForBloqueo}` :
+          modalType === "filtros" ? "Filtros de Pacientes" :
           "Nueva Evolución Médica"
         }
       >
-        {modalType === "bloqueos" ? (
+        {modalType === "filtros" ? (
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-500 uppercase">Obra Social</label>
+                <select 
+                  value={filtroObraSocial || ""}
+                  onChange={(e) => setFiltroObraSocial(e.target.value || null)}
+                  className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm"
+                >
+                  <option value="">Todas las obras sociales</option>
+                  {obrasSociales.map(os => (
+                    <option key={os.id} value={os.id}>{os.nombre}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-3 pt-4 border-t border-slate-100">
+              <button 
+                onClick={() => {
+                  setFiltroObraSocial(null);
+                  setIsModalOpen(false);
+                }}
+                className="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors"
+              >
+                Limpiar Filtros
+              </button>
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="flex-1 bg-primary text-white py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-colors"
+              >
+                Aplicar
+              </button>
+            </div>
+          </div>
+        ) : modalType === "bloqueos" ? (
           <div className="space-y-6">
             <div className="space-y-4">
               <h3 className="text-sm font-bold text-slate-700 uppercase">Bloqueos Activos</h3>
