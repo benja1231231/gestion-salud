@@ -202,7 +202,7 @@ export default function Dashboard() {
 
     const { data, error } = await supabase
       .from("turnos")
-      .select("*, pacientes(nombre, apellido)")
+      .select("*, paciente_id, pacientes(nombre, apellido)")
       .gte("fecha_hora", startOfMonth)
       .lte("fecha_hora", endOfMonth);
     
@@ -439,7 +439,6 @@ export default function Dashboard() {
       paciente_id: selectedPaciente.id,
       medico_id: medico_id,
       contenido: formData.get("contenido"),
-      created_at: formData.get("fecha") ? new Date(formData.get("fecha") as string).toISOString() : new Date().toISOString(),
       adjuntos: []
     };
 
@@ -677,9 +676,12 @@ export default function Dashboard() {
               <WaitingRoom 
                 turnos={turnos} 
                 onUpdate={fetchTurnos} 
-                onVerHC={(p) => {
-                  setSelectedPaciente(p);
-                  setActiveTab("Historias Clínicas");
+                onVerHC={(pacienteId) => {
+                  const pacienteCompleto = pacientes.find(p => p.id === pacienteId);
+                  if (pacienteCompleto) {
+                    setSelectedPaciente(pacienteCompleto);
+                    setActiveTab("Historias Clínicas");
+                  }
                 }}
               />
             </div>
