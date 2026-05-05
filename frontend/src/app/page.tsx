@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import WaitingRoom from "@/components/WaitingRoom";
 import Modal from "@/components/Modal";
 import { createClient } from "@/lib/supabase";
@@ -21,6 +21,10 @@ export default function Dashboard() {
   const [selectedPaciente, setSelectedPaciente] = useState<any>(null);
   const [selectedOS, setSelectedOS] = useState<any>(null);
   const [pacientes, setPacientes] = useState<any[]>([]);
+  const [pacienteSearchQuery, setPacienteSearchQuery] = useState("");
+  const [showPacienteDropdown, setShowPacienteDropdown] = useState(false);
+  const [selectedPacienteForTurno, setSelectedPacienteForTurno] = useState<any>(null);
+  const pacienteDropdownRef = useRef<HTMLDivElement>(null);
   const [turnos, setTurnos] = useState<any[]>([]);
   const [evoluciones, setEvoluciones] = useState<any[]>([]);
   const [creatingRecetaFor, setCreatingRecetaFor] = useState<string | null>(null);
@@ -202,7 +206,7 @@ export default function Dashboard() {
 
     const { data, error } = await supabase
       .from("turnos")
-      .select("*, pacientes(nombre, apellido)")
+      .select("*, paciente_id, pacientes(nombre, apellido)")
       .gte("fecha_hora", startOfMonth)
       .lte("fecha_hora", endOfMonth);
     
@@ -288,8 +292,24 @@ export default function Dashboard() {
     }
   }, [selectedPaciente]);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (pacienteDropdownRef.current && !pacienteDropdownRef.current.contains(event.target as Node)) {
+        setShowPacienteDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const handleCreateTurno = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!selectedPacienteForTurno) {
+      alert("Por favor selecciona un paciente");
+      return;
+    }
     const formData = new FormData(e.currentTarget);
     const fecha = formData.get("fecha") as string;
     const hora = formData.get("hora") as string;
@@ -298,7 +318,7 @@ export default function Dashboard() {
 
     const newTurno = {
       medico_id,
-      paciente_id: formData.get("paciente_id"),
+      paciente_id: selectedPacienteForTurno.id,
       fecha_hora,
       motivo: formData.get("motivo"),
       estado: "pendiente",
@@ -308,6 +328,8 @@ export default function Dashboard() {
     const { error } = await supabase.from("turnos").insert([newTurno]);
     if (!error) {
       setIsModalOpen(false);
+      setSelectedPacienteForTurno(null);
+      setPacienteSearchQuery("");
       fetchTurnos();
     } else {
       alert("Error al crear turno: " + error.message);
@@ -404,13 +426,17 @@ export default function Dashboard() {
   const handleUpdateTurno = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!selectedTurno) return;
+    if (!selectedPacienteForTurno) {
+      alert("Por favor selecciona un paciente");
+      return;
+    }
     const formData = new FormData(e.currentTarget);
     const fecha = formData.get("fecha") as string;
     const hora = formData.get("hora") as string;
     const fecha_hora = new Date(`${fecha}T${hora}`).toISOString();
 
     const updatedTurno = {
-      paciente_id: formData.get("paciente_id"),
+      paciente_id: selectedPacienteForTurno.id,
       fecha_hora,
       motivo: formData.get("motivo"),
     };
@@ -422,6 +448,8 @@ export default function Dashboard() {
 
     if (!error) {
       setIsModalOpen(false);
+      setSelectedPacienteForTurno(null);
+      setPacienteSearchQuery("");
       fetchTurnos();
     } else {
       alert("Error al actualizar turno: " + error.message);
@@ -439,7 +467,6 @@ export default function Dashboard() {
       paciente_id: selectedPaciente.id,
       medico_id: medico_id,
       contenido: formData.get("contenido"),
-      created_at: formData.get("fecha") ? new Date(formData.get("fecha") as string).toISOString() : new Date().toISOString(),
       adjuntos: []
     };
 
@@ -560,6 +587,15 @@ export default function Dashboard() {
     return matchSearch && matchObraSocial;
   });
 
+  const filteredPacientesForTurno = pacientes.filter(p => {
+    const query = pacienteSearchQuery.toLowerCase();
+    return (
+      p.nombre.toLowerCase().includes(query) ||
+      p.apellido.toLowerCase().includes(query) ||
+      p.dni.toLowerCase().includes(query)
+    );
+  });
+
 
   const menuItems = [
     { icon: CalendarIcon, label: "Agenda" },
@@ -577,6 +613,14 @@ export default function Dashboard() {
   const handleOpenModal = (type: "paciente" | "turno" | "evolucion" | "detalle_turno" | "editar_paciente" | "editar_turno" | "obra_social" | "editar_obra_social" | "bloqueos" | "filtros") => {
     setModalType(type);
     setIsModalOpen(true);
+    if (type === "turno") {
+      setPacienteSearchQuery("");
+      setSelectedPacienteForTurno(null);
+    } else if (type === "editar_turno" && selectedTurno) {
+      const paciente = pacientes.find(p => p.id === selectedTurno.paciente_id);
+      setSelectedPacienteForTurno(paciente || null);
+      setPacienteSearchQuery(paciente ? `${paciente.nombre} ${paciente.apellido}` : "");
+    }
   };
 
   const renderContent = () => {
@@ -677,9 +721,12 @@ export default function Dashboard() {
               <WaitingRoom 
                 turnos={turnos} 
                 onUpdate={fetchTurnos} 
-                onVerHC={(p) => {
-                  setSelectedPaciente(p);
-                  setActiveTab("Historias Clínicas");
+                onVerHC={(pacienteId) => {
+                  const pacienteCompleto = pacientes.find(p => p.id === pacienteId);
+                  if (pacienteCompleto) {
+                    setSelectedPaciente(pacienteCompleto);
+                    setActiveTab("Historias Clínicas");
+                  }
                 }}
               />
             </div>
@@ -1429,14 +1476,49 @@ export default function Dashboard() {
             </>
           ) : modalType === "turno" || modalType === "editar_turno" ? (
             <>
-              <div className="space-y-1">
+              <div className="space-y-1 relative" ref={pacienteDropdownRef}>
                 <label className="text-xs font-bold text-slate-500 uppercase">Paciente</label>
-                <select name="paciente_id" className="w-full p-2 bg-slate-50 border-none rounded-lg text-sm" defaultValue={modalType === "editar_turno" ? selectedTurno?.paciente_id : ""} required>
-                  <option value="">Seleccionar paciente...</option>
-                  {pacientes.map(p => (
-                    <option key={p.id} value={p.id}>{p.nombre} {p.apellido} ({p.dni})</option>
-                  ))}
-                </select>
+                <input
+                  type="text"
+                  value={pacienteSearchQuery}
+                  onChange={(e) => {
+                    setPacienteSearchQuery(e.target.value);
+                    setShowPacienteDropdown(true);
+                  }}
+                  onFocus={() => setShowPacienteDropdown(true)}
+                  placeholder="Buscar por nombre, apellido o DNI..."
+                  className="w-full p-2 bg-slate-50 border-none rounded-lg text-sm"
+                  autoComplete="off"
+                />
+                {showPacienteDropdown && (
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    {filteredPacientesForTurno.length === 0 ? (
+                      <div className="p-3 text-sm text-slate-500 text-center">
+                        No hay coincidencias
+                      </div>
+                    ) : (
+                      filteredPacientesForTurno.map((p) => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedPacienteForTurno(p);
+                            setPacienteSearchQuery(`${p.nombre} ${p.apellido}`);
+                            setShowPacienteDropdown(false);
+                          }}
+                          className={`w-full text-left p-3 text-sm hover:bg-slate-50 transition-colors ${selectedPacienteForTurno?.id === p.id ? 'bg-primary/10' : ''}`}
+                        >
+                          <div className="font-medium text-slate-900">
+                            {p.nombre} {p.apellido}
+                          </div>
+                          <div className="text-xs text-slate-500">
+                            DNI: {p.dni}
+                          </div>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">

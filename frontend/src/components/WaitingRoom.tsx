@@ -8,7 +8,7 @@ export type EstadoTurno = "pendiente" | "llegó" | "en_espera" | "en_consultorio
 interface WaitingRoomProps {
   turnos: any[]
   onUpdate: () => void
-  onVerHC: (paciente: any) => void
+  onVerHC: (pacienteId: string) => void
 }
 
 export default function WaitingRoom({ turnos, onUpdate, onVerHC }: WaitingRoomProps) {
@@ -104,7 +104,7 @@ export default function WaitingRoom({ turnos, onUpdate, onVerHC }: WaitingRoomPr
                 <button 
                   onClick={() => {
                     cambiarEstado(t.id, "en_consultorio");
-                    onVerHC(t.pacientes);
+                    onVerHC(t.paciente_id);
                   }}
                   className="flex-1 text-[11px] py-1.5 rounded bg-primary text-white hover:opacity-90 font-bold flex items-center justify-center gap-1 transition shadow-lg shadow-primary/20"
                 >

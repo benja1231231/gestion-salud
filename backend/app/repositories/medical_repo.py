@@ -57,11 +57,13 @@ class MedicalRepository:
 
     # Evoluciones
     async def create_evolucion(self, data: EvolucionCreate) -> dict:
-        res = self.client.table("evoluciones").insert(data.model_dump(mode="json")).execute()
+        insert_data = data.model_dump()
+        insert_data["adjuntos"] = data.adjuntos
+        res = self.client.table("evoluciones").insert(insert_data).execute()
         return res.data[0]
 
     async def get_evoluciones_by_paciente(self, paciente_id: UUID) -> List[dict]:
-        res = self.client.table("evoluciones").select("*").eq("paciente_id", str(paciente_id)).execute()
+        res = self.client.table("evoluciones").select("*").eq("paciente_id", str(paciente_id)).order("created_at", desc=True).execute()
         return res.data
 
     # Bloqueos
