@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { X } from "lucide-react"
 
 interface ModalProps {
@@ -14,12 +13,12 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
-        <div className="flex items-center justify-between p-6 border-b border-slate-100">
-          <h2 className="text-xl font-bold text-slate-900">{title}</h2>
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-            <X className="w-5 h-5 text-slate-500" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
+      <div className="bg-white rounded-lg w-full max-w-md overflow-hidden">
+        <div className="flex items-center justify-between p-6 border-b border-[#e0e0e0]">
+          <h2 className="text-[17px] font-semibold text-[#1d1d1f] tracking-tight">{title}</h2>
+          <button onClick={onClose} className="p-2 hover:bg-[#f5f5f7] rounded-full transition-colors">
+            <X className="w-4 h-4 text-[#7a7a7a]" />
           </button>
         </div>
         <div className="p-6">

@@ -640,23 +640,23 @@ export default function Dashboard() {
         return (
           <div className="grid grid-cols-12 gap-8">
             <div className="col-span-12 lg:col-span-8 space-y-6">
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 min-h-[600px] flex flex-col">
+              <div className="bg-white p-6 rounded-lg border border-[#e0e0e0] min-h-[600px] flex flex-col">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-4">
-                    <h2 className="text-xl font-bold text-slate-900 capitalize">
+                    <h2 className="text-[21px] font-semibold text-[#1d1d1f] tracking-tight capitalize">
                       {currentDate.toLocaleString('es-ES', { month: 'long', year: 'numeric' })}
                     </h2>
-                    <div className="flex border border-slate-200 rounded-lg overflow-hidden shadow-sm">
-                      <button onClick={() => changeMonth(-1)} className="px-3 py-1.5 text-xs font-semibold bg-white border-r border-slate-200 hover:bg-slate-50 transition-colors">&lt;</button>
-                      <button onClick={() => setCurrentDate(new Date())} className="px-3 py-1.5 text-xs font-semibold bg-white hover:bg-slate-50 transition-colors">Hoy</button>
-                      <button onClick={() => changeMonth(1)} className="px-3 py-1.5 text-xs font-semibold bg-white border-l border-slate-200 hover:bg-slate-50 transition-colors">&gt;</button>
+                    <div className="flex border border-[#e0e0e0] rounded-full overflow-hidden">
+                      <button onClick={() => changeMonth(-1)} className="px-4 py-2 text-[14px] font-medium bg-white border-r border-[#e0e0e0] hover:bg-[#f5f5f7] transition-colors">&lt;</button>
+                      <button onClick={() => setCurrentDate(new Date())} className="px-4 py-2 text-[14px] font-medium bg-white hover:bg-[#f5f5f7] transition-colors">Hoy</button>
+                      <button onClick={() => changeMonth(1)} className="px-4 py-2 text-[14px] font-medium bg-white border-l border-[#e0e0e0] hover:bg-[#f5f5f7] transition-colors">&gt;</button>
                     </div>
                   </div>
                 </div>
                 
-                <div className="flex-1 grid grid-cols-7 border-t border-l border-slate-100 mt-4 rounded-lg overflow-hidden shadow-inner">
+                <div className="flex-1 grid grid-cols-7 border-t border-l border-[#e0e0e0] mt-4 rounded-lg overflow-hidden">
                   {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(day => (
-                    <div key={day} className="p-3 text-center border-b border-r border-slate-100 bg-slate-50/50 text-[10px] font-bold text-slate-400 uppercase tracking-wider">{day}</div>
+                    <div key={day} className="p-3 text-center border-b border-r border-[#e0e0e0] bg-[#f5f5f7] text-[12px] font-medium text-[#7a7a7a] uppercase">{day}</div>
                   ))}
                   {calendarDays.map((day, i) => {
                     const dayTurnos = day ? turnos.filter(t => {
@@ -677,20 +677,20 @@ export default function Dashboard() {
                           setSelectedDateForBloqueo(dateStr);
                           handleOpenModal("bloqueos");
                         }}
-                        className={`aspect-square p-2 border-b border-r border-slate-100 transition-colors relative group ${day ? 'hover:bg-slate-50/50 cursor-pointer' : 'bg-slate-50/20'} ${isFeriado ? 'bg-red-50/50' : ''}`}
+                        className={`aspect-square p-2 border-b border-r border-[#e0e0e0] transition-colors relative group ${day ? 'hover:bg-[#f5f5f7] cursor-pointer' : 'bg-[#fafafc]'} ${isFeriado ? 'bg-[#fafafc]' : ''}`}
                       >
                         {day && (
                           <>
                             <div className="flex justify-between items-start">
-                              <span className={`text-xs font-medium transition-colors ${
+                              <span className={`text-[14px] font-medium transition-colors ${
                                 day === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear()
-                                ? 'text-primary bg-primary/10 w-6 h-6 flex items-center justify-center rounded-full font-bold' 
-                                : 'text-slate-400 group-hover:text-primary'
+                                ? 'text-white bg-[#0066cc] w-6 h-6 flex items-center justify-center rounded-full' 
+                                : 'text-[#7a7a7a] group-hover:text-[#1d1d1f]'
                               }`}>
                                 {day}
                               </span>
-                              {isFeriado && <div className="text-[8px] bg-red-100 text-red-600 px-1 rounded font-bold uppercase">Feriado</div>}
-                              {hasBloqueos && !isFeriado && <Clock className="w-3 h-3 text-amber-400" />}
+                              {isFeriado && <div className="text-[10px] bg-[#f5f5f7] text-[#7a7a7a] px-2 rounded-full font-medium">Feriado</div>}
+                              {hasBloqueos && !isFeriado && <Clock className="w-3 h-3 text-[#7a7a7a]" />}
                             </div>
                             <div className="mt-1 space-y-1 overflow-y-auto max-h-[80%] scrollbar-hide">
                               {dayTurnos.filter(t => t.estado !== 'cancelado').map(t => (
@@ -702,7 +702,7 @@ export default function Dashboard() {
                                     setModalType("detalle_turno");
                                     setIsModalOpen(true);
                                   }}
-                                  className="p-1 bg-primary/10 border-l-2 border-primary rounded text-[9px] font-bold text-primary truncate shadow-sm hover:bg-primary/20 transition-colors"
+                                  className="p-1.5 bg-[#0066cc]/10 rounded-full text-[10px] font-medium text-[#0066cc] truncate hover:bg-[#0066cc]/20 transition-colors"
                                   title={`${new Date(t.fecha_hora).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ${t.pacientes?.nombre}`}
                                 >
                                   {new Date(t.fecha_hora).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} {t.pacientes?.nombre}
@@ -735,57 +735,57 @@ export default function Dashboard() {
       case "Pacientes":
         return (
           <div className="space-y-6">
-            <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-200">
+            <div className="flex justify-between items-center bg-white p-4 rounded-lg border border-[#e0e0e0]">
               <div className="relative w-96">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7a7a7a]" />
                 <input 
                   type="text" 
                   placeholder="Buscar por DNI o Nombre..." 
-                  className="w-full pl-10 pr-4 py-2 bg-slate-50 border-none rounded-lg text-sm focus:ring-2 ring-primary/20"
+                  className="w-full pl-11 pr-4 py-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
               <button 
                 onClick={() => handleOpenModal("filtros")}
-                className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition"
+                className="flex items-center gap-2 px-5 py-2.5 border border-[#e0e0e0] rounded-full text-[14px] font-medium hover:bg-[#f5f5f7] transition"
               >
                 <Filter className="w-4 h-4" /> Filtros
-                {filtroObraSocial && <span className="bg-primary text-white text-xs px-2 py-0.5 rounded-full">1</span>}
+                {filtroObraSocial && <span className="bg-[#0066cc] text-white text-[12px] px-2.5 py-0.5 rounded-full">1</span>}
               </button>
             </div>
-            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
+            <div className="bg-white rounded-lg border border-[#e0e0e0] overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-[#f5f5f7] text-[#7a7a7a] font-medium border-b border-[#e0e0e0]">
                   <tr>
-                    <th className="px-6 py-4">Paciente</th>
-                    <th className="px-6 py-4">DNI / Edad</th>
-                    <th className="px-6 py-4">Contacto</th>
-                    <th className="px-6 py-4">Obra Social</th>
-                    <th className="px-6 py-4">Acciones</th>
+                    <th className="px-6 py-4 text-[14px]">Paciente</th>
+                    <th className="px-6 py-4 text-[14px]">DNI / Edad</th>
+                    <th className="px-6 py-4 text-[14px]">Contacto</th>
+                    <th className="px-6 py-4 text-[14px]">Obra Social</th>
+                    <th className="px-6 py-4 text-[14px]">Acciones</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-[#e0e0e0]">
                   {loading ? (
-                    <tr><td colSpan={5} className="px-6 py-4 text-center text-slate-400">Cargando...</td></tr>
+                    <tr><td colSpan={5} className="px-6 py-4 text-center text-[#7a7a7a]">Cargando...</td></tr>
                   ) : filteredPacientes.length === 0 ? (
-                    <tr><td colSpan={5} className="px-6 py-4 text-center text-slate-400">No hay pacientes registrados.</td></tr>
+                    <tr><td colSpan={5} className="px-6 py-4 text-center text-[#7a7a7a]">No hay pacientes registrados.</td></tr>
                   ) : filteredPacientes.map(p => (
-                    <tr key={p.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4 font-medium text-slate-900">
+                    <tr key={p.id} className="hover:bg-[#f5f5f7] transition-colors">
+                      <td className="px-6 py-4 font-medium text-[#1d1d1f] text-[17px]">
                         {p.nombre} {p.apellido}
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-slate-900">{p.dni}</div>
-                        <div className="text-xs text-slate-500">{calculateAge(p.fecha_nacimiento)} años</div>
+                        <div className="text-[#1d1d1f] text-[14px]">{p.dni}</div>
+                        <div className="text-[12px] text-[#7a7a7a]">{calculateAge(p.fecha_nacimiento)} años</div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-slate-900">{p.telefono || 'Sin tel'}</div>
-                        <div className="text-xs text-slate-500">{p.email || '-'}</div>
+                        <div className="text-[#1d1d1f] text-[14px]">{p.telefono || 'Sin tel'}</div>
+                        <div className="text-[12px] text-[#7a7a7a]">{p.email || '-'}</div>
                       </td>
-                      <td className="px-6 py-4 text-slate-500">
+                      <td className="px-6 py-4 text-[#7a7a7a] text-[14px]">
                         {p.obras_sociales?.nombre || 'S/D'}
-                        {p.nro_afiliado && <div className="text-[10px] font-bold text-slate-400 mt-1"># {p.nro_afiliado}</div>}
+                        {p.nro_afiliado && <div className="text-[12px] font-medium text-[#7a7a7a] mt-1"># {p.nro_afiliado}</div>}
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex gap-3">
@@ -794,7 +794,7 @@ export default function Dashboard() {
                               setSelectedPaciente(p);
                               setActiveTab("Historias Clínicas");
                             }} 
-                            className="text-primary font-bold hover:underline"
+                            className="text-[#0066cc] font-medium hover:underline text-[14px]"
                           >
                             Ver HC
                           </button>
@@ -803,13 +803,13 @@ export default function Dashboard() {
                               setSelectedPaciente(p);
                               handleOpenModal("editar_paciente");
                             }} 
-                            className="text-slate-400 font-bold hover:text-slate-600"
+                            className="text-[#7a7a7a] font-medium hover:text-[#1d1d1f] text-[14px]"
                           >
                             Editar
                           </button>
                           <button 
                             onClick={() => handleDeletePaciente(p.id)} 
-                            className="text-red-400 font-bold hover:text-red-600"
+                            className="text-[#7a7a7a] font-medium hover:text-[#1d1d1f] text-[14px]"
                             title="Eliminar Paciente"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -827,13 +827,13 @@ export default function Dashboard() {
         return (
           <div className="grid grid-cols-12 gap-8">
             <div className="col-span-12 lg:col-span-4 space-y-4">
-              <div className="bg-white p-4 rounded-xl border border-slate-200">
+              <div className="bg-white p-4 rounded-lg border border-[#e0e0e0]">
                 <div className="relative mb-4">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7a7a7a]" />
                   <input 
                     type="text" 
                     placeholder="Buscar paciente..." 
-                    className="w-full pl-10 pr-4 py-2 bg-slate-50 border-none rounded-lg text-xs"
+                    className="w-full pl-11 pr-4 py-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -843,10 +843,10 @@ export default function Dashboard() {
                     <button 
                       key={p.id} 
                       onClick={() => setSelectedPaciente(p)}
-                      className={`w-full text-left p-3 rounded-lg text-sm transition-colors ${selectedPaciente?.id === p.id ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-slate-50'}`}
+                      className={`w-full text-left p-4 rounded-lg text-sm transition-colors ${selectedPaciente?.id === p.id ? 'bg-[#0066cc]/10 border border-[#0066cc]/20' : 'hover:bg-[#f5f5f7]'}`}
                     >
-                      <p className="font-bold text-slate-900">{p.nombre} {p.apellido}</p>
-                      <p className="text-xs text-slate-500 mt-0.5">DNI: {p.dni}</p>
+                      <p className="font-semibold text-[#1d1d1f] text-[17px]">{p.nombre} {p.apellido}</p>
+                      <p className="text-[12px] text-[#7a7a7a] mt-0.5">DNI: {p.dni}</p>
                     </button>
                   ))}
                 </div>
@@ -854,11 +854,11 @@ export default function Dashboard() {
             </div>
             <div className="col-span-12 lg:col-span-8 space-y-6">
               {selectedPaciente ? (
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                  <div className="flex justify-between items-start mb-6 border-b border-slate-100 pb-6">
+                <div className="bg-white p-6 rounded-lg border border-[#e0e0e0]">
+                  <div className="flex justify-between items-start mb-6 border-b border-[#e0e0e0] pb-6">
                     <div>
-                      <h2 className="text-2xl font-bold text-slate-900">{selectedPaciente.nombre} {selectedPaciente.apellido}</h2>
-                      <div className="flex gap-4 mt-2 text-sm text-slate-500">
+                      <h2 className="text-[21px] font-semibold text-[#1d1d1f] tracking-tight">{selectedPaciente.nombre} {selectedPaciente.apellido}</h2>
+                      <div className="flex gap-4 mt-2 text-[14px] text-[#7a7a7a]">
                         <span className="flex items-center gap-1"><Users className="w-3 h-3" /> DNI: {selectedPaciente.dni} ({calculateAge(selectedPaciente.fecha_nacimiento)} años)</span>
                         <span className="flex items-center gap-1">
                           <History className="w-3 h-3" /> 
@@ -866,16 +866,16 @@ export default function Dashboard() {
                           {selectedPaciente.nro_afiliado && ` - # ${selectedPaciente.nro_afiliado}`}
                         </span>
                       </div>
-                      <div className="flex gap-4 mt-1 text-sm text-slate-500">
+                      <div className="flex gap-4 mt-1 text-[14px] text-[#7a7a7a]">
                         <span className="flex items-center gap-1">Tel: {selectedPaciente.telefono || 'N/A'}</span>
                         <span className="flex items-center gap-1">Email: {selectedPaciente.email || 'N/A'}</span>
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <button className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition" title="Descargar Historia Completa">
-                        <Download className="w-4 h-4 text-slate-600" />
+                      <button className="p-2 border border-[#e0e0e0] rounded-full hover:bg-[#f5f5f7] transition" title="Descargar Historia Completa">
+                        <Download className="w-4 h-4 text-[#7a7a7a]" />
                       </button>
-                      <button onClick={() => handleOpenModal("evolucion")} className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2">
+                      <button onClick={() => handleOpenModal("evolucion")} className="bg-[#0066cc] text-white px-5 py-2.5 rounded-full text-[14px] font-medium flex items-center gap-2 hover:opacity-90">
                         <Plus className="w-4 h-4" /> Nueva Evolución
                       </button>
                     </div>
@@ -883,19 +883,19 @@ export default function Dashboard() {
 
                   <div className="space-y-8">
                     {evoluciones.length === 0 ? (
-                      <p className="text-center text-slate-400 py-10">No hay evoluciones registradas para este paciente.</p>
+                      <p className="text-center text-[#7a7a7a] py-10 text-[14px]">No hay evoluciones registradas para este paciente.</p>
                     ) : evoluciones.map(e => (
-                      <div key={e.id} className="relative pl-8 border-l-2 border-slate-100 pb-8 last:pb-0">
-                        <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-white border-2 border-primary"></div>
+                      <div key={e.id} className="relative pl-8 border-l-2 border-[#e0e0e0] pb-8 last:pb-0">
+                        <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-white border-2 border-[#0066cc]"></div>
                         <div className="flex justify-between items-center mb-2">
-                          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                          <span className="text-[12px] font-medium text-[#7a7a7a] uppercase">
                             {new Date(e.created_at).toLocaleString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                           </span>
                           {creatingRecetaFor === e.id ? (
-                            <div className="flex flex-col gap-2 w-full mt-2 bg-white p-4 rounded-xl border border-primary/20 shadow-sm">
-                              <label className="text-[10px] font-bold text-primary uppercase">Contenido de la Receta</label>
+                            <div className="flex flex-col gap-2 w-full mt-2 bg-white p-4 rounded-lg border border-[#0066cc]/20">
+                              <label className="text-[12px] font-medium text-[#0066cc] uppercase">Contenido de la Receta</label>
                               <textarea
-                                className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-1 focus:ring-primary"
+                                className="w-full p-3 bg-[#f5f5f7] border-none rounded-lg text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]"
                                 placeholder="Escribe la receta aquí..."
                                 value={recetaContent}
                                 onChange={(ev) => setRecetaContent(ev.target.value)}
@@ -904,7 +904,7 @@ export default function Dashboard() {
                               <div className="flex justify-end gap-2">
                                 <button 
                                   onClick={() => setCreatingRecetaFor(null)}
-                                  className="text-xs text-slate-500 font-bold hover:underline"
+                                  className="text-[14px] text-[#7a7a7a] font-medium hover:underline"
                                 >
                                   Cancelar
                                 </button>
@@ -931,9 +931,9 @@ export default function Dashboard() {
                                       console.error(err);
                                     }
                                   }}
-                                  className="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 hover:bg-primary/90 transition"
+                                  className="bg-[#0066cc] text-white px-4 py-2 rounded-full text-[14px] font-medium flex items-center gap-1 hover:opacity-90 transition"
                                 >
-                                  <Download className="w-3 h-3" /> Descargar PDF
+                                  <Download className="w-4 h-4" /> Descargar PDF
                                 </button>
                               </div>
                             </div>
@@ -943,14 +943,14 @@ export default function Dashboard() {
                                 setCreatingRecetaFor(e.id);
                                 setRecetaContent(e.contenido);
                               }}
-                              className="text-xs text-primary font-bold flex items-center gap-1 hover:underline"
+                              className="text-[14px] text-[#0066cc] font-medium flex items-center gap-1 hover:underline"
                             >
-                              <FileText className="w-3 h-3" /> Crear nueva receta
+                              <FileText className="w-4 h-4" /> Crear nueva receta
                             </button>
                           )}
                         </div>
-                        <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
-                          <p className="text-sm text-slate-700 leading-relaxed">
+                        <div className="bg-[#f5f5f7] p-4 rounded-lg border border-[#e0e0e0]">
+                          <p className="text-[17px] text-[#1d1d1f] leading-relaxed">
                             {e.contenido}
                           </p>
                         </div>
@@ -959,10 +959,10 @@ export default function Dashboard() {
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center h-[500px] bg-white rounded-2xl border border-dashed border-slate-300">
-                  <Users className="w-12 h-12 text-slate-300 mb-4" />
-                  <h3 className="text-lg font-semibold text-slate-900">Selecciona un paciente</h3>
-                  <p className="text-sm text-slate-500 mt-1">Busca y selecciona un paciente para ver su historia clínica.</p>
+                <div className="flex flex-col items-center justify-center h-[500px] bg-white rounded-lg border border-dashed border-[#e0e0e0]">
+                  <Users className="w-12 h-12 text-[#d2d2d7] mb-4" />
+                  <h3 className="text-[17px] font-semibold text-[#1d1d1f]">Selecciona un paciente</h3>
+                  <p className="text-[14px] text-[#7a7a7a] mt-1">Busca y selecciona un paciente para ver su historia clínica.</p>
                 </div>
               )}
             </div>
@@ -972,90 +972,90 @@ export default function Dashboard() {
         return (
           <div className="max-w-2xl mx-auto space-y-8">
             {/* Configuración de Horarios */}
-            <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+            <div className="bg-white p-8 rounded-lg border border-[#e0e0e0] space-y-6">
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-primary" />
+                <div className="w-12 h-12 bg-[#0066cc]/10 rounded-lg flex items-center justify-center">
+                  <Clock className="w-6 h-6 text-[#0066cc]" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-slate-900">Configuración de Agenda</h2>
-                  <p className="text-sm text-slate-500">Define tus horarios y días de atención.</p>
+                  <h2 className="text-[21px] font-semibold text-[#1d1d1f] tracking-tight">Configuración de Agenda</h2>
+                  <p className="text-[14px] text-[#7a7a7a]">Define tus horarios y días de atención.</p>
                 </div>
               </div>
 
               <form onSubmit={handleUpdateConfig} className="space-y-6">
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase">Matrícula Profesional</label>
-                    <input name="matricula" type="text" defaultValue={medicoInfo.matricula} className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" placeholder="M.N. 12345" required />
+                    <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Matrícula Profesional</label>
+                    <input name="matricula" type="text" defaultValue={medicoInfo.matricula} className="w-full p-3 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" placeholder="M.N. 12345" required />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase">Especialidad</label>
-                    <input name="especialidad" type="text" defaultValue={medicoInfo.especialidad} className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" placeholder="Cardiología" required />
+                    <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Especialidad</label>
+                    <input name="especialidad" type="text" defaultValue={medicoInfo.especialidad} className="w-full p-3 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" placeholder="Cardiología" required />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase">Matrícula de Especialidad (M.E.)</label>
-                    <input name="matricula_especialidad" type="text" defaultValue={medicoInfo.matricula_especialidad} className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" placeholder="M.E. 67890" />
+                    <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Matrícula de Especialidad (M.E.)</label>
+                    <input name="matricula_especialidad" type="text" defaultValue={medicoInfo.matricula_especialidad} className="w-full p-3 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" placeholder="M.E. 67890" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase">Teléfono de Consultorio</label>
-                    <input name="telefono_consultorio" type="tel" defaultValue={medicoInfo.telefono_consultorio} className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" placeholder="+54 11 1234-5678" />
+                    <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Teléfono de Consultorio</label>
+                    <input name="telefono_consultorio" type="tel" defaultValue={medicoInfo.telefono_consultorio} className="w-full p-3 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" placeholder="+54 11 1234-5678" />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Dirección del Establecimiento</label>
-                  <input name="direccion_consultorio" type="text" defaultValue={medicoInfo.direccion_consultorio} className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" placeholder="Av. Principal 123, Ciudad" />
+                  <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Dirección del Establecimiento</label>
+                  <input name="direccion_consultorio" type="text" defaultValue={medicoInfo.direccion_consultorio} className="w-full p-3 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" placeholder="Av. Principal 123, Ciudad" />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Firma Digital (Imagen)</label>
-                  <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">
+                  <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Firma Digital (Imagen)</label>
+                  <div className="flex items-center gap-4 p-4 bg-[#f5f5f7] rounded-lg border border-dashed border-[#e0e0e0]">
                     {medicoInfo.firma_url ? (
                       <div className="flex flex-col items-center gap-2">
                         <div className="relative group">
-                          <img src={medicoInfo.firma_url} alt="Firma" className="h-16 object-contain bg-white rounded p-1 border border-slate-200" />
+                          <img src={medicoInfo.firma_url} alt="Firma" className="h-16 object-contain bg-white rounded p-1 border border-[#e0e0e0]" />
                           <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded">
-                            <p className="text-[10px] text-white font-bold">Actual</p>
+                            <p className="text-[10px] text-white font-medium">Actual</p>
                           </div>
                         </div>
                         <button 
                           type="button"
                           onClick={handleDeleteFirma}
-                          className="text-[10px] font-bold text-red-500 hover:text-red-700 flex items-center gap-1"
+                          className="text-[10px] font-medium text-[#7a7a7a] hover:text-[#1d1d1f] flex items-center gap-1"
                         >
                           <Trash2 className="w-3 h-3" /> Eliminar
                         </button>
                       </div>
                     ) : (
-                      <div className="w-16 h-16 bg-white rounded border border-slate-200 flex items-center justify-center">
-                        <Plus className="w-6 h-6 text-slate-300" />
+                      <div className="w-16 h-16 bg-white rounded border border-[#e0e0e0] flex items-center justify-center">
+                        <Plus className="w-6 h-6 text-[#d2d2d7]" />
                       </div>
                     )}
                     <div className="flex-1">
-                      <input name="firma_file" type="file" accept="image/*" className="text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" />
-                      <p className="text-[10px] text-slate-400 mt-1">Sube una imagen PNG/JPG de tu firma. Para cambiarla, simplemente sube una nueva.</p>
+                      <input name="firma_file" type="file" accept="image/*" className="text-[12px] text-[#7a7a7a] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[12px] file:font-medium file:bg-[#0066cc]/10 file:text-[#0066cc] hover:file:bg-[#0066cc]/20" />
+                      <p className="text-[10px] text-[#7a7a7a] mt-1">Sube una imagen PNG/JPG de tu firma. Para cambiarla, simplemente sube una nueva.</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase">Hora de Inicio</label>
-                    <input name="inicio" type="time" defaultValue={medicoConfig?.inicio || "08:00"} className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" required />
+                    <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Hora de Inicio</label>
+                    <input name="inicio" type="time" defaultValue={medicoConfig?.inicio || "08:00"} className="w-full p-3 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" required />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase">Hora de Fin</label>
-                    <input name="fin" type="time" defaultValue={medicoConfig?.fin || "20:00"} className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" required />
+                    <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Hora de Fin</label>
+                    <input name="fin" type="time" defaultValue={medicoConfig?.fin || "20:00"} className="w-full p-3 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" required />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Duración por Turno (minutos)</label>
-                  <select name="duracion_turno" defaultValue={medicoConfig?.duracion_turno || 15} className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm">
+                  <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Duración por Turno (minutos)</label>
+                  <select name="duracion_turno" defaultValue={medicoConfig?.duracion_turno || 15} className="w-full p-3 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]">
                     {[10, 15, 20, 30, 40, 60].map(m => (
                       <option key={m} value={m}>{m} minutos</option>
                     ))}
@@ -1063,44 +1063,44 @@ export default function Dashboard() {
                 </div>
 
                 <div className="space-y-3">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Días de Atención</label>
+                  <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Días de Atención</label>
                   <div className="flex flex-wrap gap-2">
                     {[
                       { v: 1, l: 'Lunes' }, { v: 2, l: 'Martes' }, { v: 3, l: 'Miércoles' }, 
                       { v: 4, l: 'Jueves' }, { v: 5, l: 'Viernes' }, { v: 6, l: 'Sábado' }, { v: 0, l: 'Domingo' }
                     ].map(dia => (
-                      <label key={dia.v} className="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
+                      <label key={dia.v} className="flex items-center gap-2 bg-[#f5f5f7] px-4 py-2 rounded-full cursor-pointer hover:bg-[#e0e0e0] transition-colors">
                         <input 
                           type="checkbox" 
                           name={`dia_${dia.v}`} 
                           defaultChecked={medicoConfig?.dias_laborales?.includes(dia.v)}
-                          className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary"
+                          className="w-4 h-4 rounded border-[#e0e0e0] text-[#0066cc] focus:ring-[#0066cc]"
                         />
-                        <span className="text-sm font-medium text-slate-700">{dia.l}</span>
+                        <span className="text-[14px] font-medium text-[#1d1d1f]">{dia.l}</span>
                       </label>
                     ))}
                   </div>
                 </div>
 
-                <button type="submit" className="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition">
+                <button type="submit" className="w-full bg-[#0066cc] text-white py-3.5 rounded-full font-medium hover:opacity-90 transition">
                   Guardar Configuración de Agenda
                 </button>
               </form>
             </div>
 
-            <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+            <div className="bg-white p-8 rounded-lg border border-[#e0e0e0] space-y-6">
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center">
-                  <CalendarIcon className="w-6 h-6 text-primary" />
+                <div className="w-12 h-12 bg-[#0066cc]/10 rounded-lg flex items-center justify-center">
+                  <CalendarIcon className="w-6 h-6 text-[#0066cc]" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-slate-900">Turnero Online</h2>
-                  <p className="text-sm text-slate-500">Comparte este link con tus pacientes para que reserven solos.</p>
+                  <h2 className="text-[21px] font-semibold text-[#1d1d1f] tracking-tight">Turnero Online</h2>
+                  <p className="text-[14px] text-[#7a7a7a]">Comparte este link con tus pacientes para que reserven solos.</p>
                 </div>
               </div>
 
-              <div className="flex flex-col md:flex-row gap-8 items-center bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+              <div className="flex flex-col md:flex-row gap-8 items-center bg-[#f5f5f7] p-6 rounded-lg border border-[#e0e0e0]">
+                <div className="bg-white p-4 rounded-lg border border-[#e0e0e0]">
                   {medicoId && (
                     <QRCodeSVG 
                       value={`${window.location.origin}/reservar/${medicoId}`} 
@@ -1112,8 +1112,8 @@ export default function Dashboard() {
                 </div>
                 <div className="flex-1 space-y-4 text-center md:text-left">
                   <div className="space-y-1">
-                    <p className="text-xs font-bold text-slate-400 uppercase">Link de Reserva</p>
-                    <p className="text-sm font-mono bg-white p-3 rounded-lg border border-slate-200 break-all">
+                    <p className="text-[12px] font-medium text-[#7a7a7a] uppercase">Link de Reserva</p>
+                    <p className="text-[14px] font-mono bg-white p-3 rounded-lg border border-[#e0e0e0] break-all">
                       {medicoId ? `${window.location.origin}/reservar/${medicoId}` : "Cargando..."}
                     </p>
                   </div>
@@ -1124,29 +1124,29 @@ export default function Dashboard() {
                         alert("Link copiado al portapapeles");
                       }
                     }}
-                    className="bg-primary text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:opacity-90 transition w-full md:w-auto"
+                    className="bg-[#0066cc] text-white px-6 py-2.5 rounded-full font-medium text-[14px] hover:opacity-90 transition w-full md:w-auto"
                   >
                     Copiar Link
                   </button>
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-slate-100">
+              <div className="pt-6 border-t border-[#e0e0e0]">
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="font-bold text-slate-800">Gestionar Obras Sociales</h3>
+                  <h3 className="text-[17px] font-semibold text-[#1d1d1f]">Gestionar Obras Sociales</h3>
                   <button 
                     onClick={() => handleOpenModal("obra_social")}
-                    className="text-xs bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg font-bold hover:bg-slate-200 transition flex items-center gap-1"
+                    className="text-[12px] bg-[#f5f5f7] text-[#7a7a7a] px-3 py-1.5 rounded-full font-medium hover:bg-[#e0e0e0] transition flex items-center gap-1"
                   >
                     <Plus className="w-3 h-3" /> Nueva OS
                   </button>
                 </div>
                 <div className="space-y-2">
                   {obrasSociales.map(os => (
-                    <div key={os.id} className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100 group">
+                    <div key={os.id} className="flex justify-between items-center p-3 bg-[#f5f5f7] rounded-lg border border-[#e0e0e0] group">
                       <div>
-                        <p className="text-sm font-bold text-slate-700">{os.nombre}</p>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{os.codigo_nacional || "Sin código"}</p>
+                        <p className="text-[14px] font-medium text-[#1d1d1f]">{os.nombre}</p>
+                        <p className="text-[10px] text-[#7a7a7a] font-medium uppercase tracking-wider">{os.codigo_nacional || "Sin código"}</p>
                       </div>
                       <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button 
@@ -1154,13 +1154,13 @@ export default function Dashboard() {
                             setSelectedOS(os);
                             handleOpenModal("editar_obra_social");
                           }}
-                          className="p-1.5 text-slate-400 hover:text-slate-600"
+                          className="p-1.5 text-[#7a7a7a] hover:text-[#1d1d1f]"
                         >
                           <Settings className="w-4 h-4" />
                         </button>
                         <button 
                           onClick={() => handleDeleteOS(os.id)}
-                          className="p-1.5 text-red-400 hover:text-red-600"
+                          className="p-1.5 text-[#7a7a7a] hover:text-[#1d1d1f]"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -1170,19 +1170,19 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-slate-100">
-                <h3 className="font-bold text-slate-800 mb-4">Instrucciones</h3>
-                <ul className="text-sm text-slate-600 space-y-3">
+              <div className="pt-6 border-t border-[#e0e0e0]">
+                <h3 className="text-[17px] font-semibold text-[#1d1d1f] mb-4">Instrucciones</h3>
+                <ul className="text-[14px] text-[#7a7a7a] space-y-3">
                   <li className="flex gap-2">
-                    <span className="w-5 h-5 bg-slate-100 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0">1</span>
+                    <span className="w-5 h-5 bg-[#f5f5f7] rounded-full flex items-center justify-center text-[10px] font-medium shrink-0">1</span>
                     Imprime el código QR y colócalo en tu consultorio.
                   </li>
                   <li className="flex gap-2">
-                    <span className="w-5 h-5 bg-slate-100 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0">2</span>
+                    <span className="w-5 h-5 bg-[#f5f5f7] rounded-full flex items-center justify-center text-[10px] font-medium shrink-0">2</span>
                     El paciente escanea, ingresa su DNI y elige fecha/hora.
                   </li>
                   <li className="flex gap-2">
-                    <span className="w-5 h-5 bg-slate-100 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0">3</span>
+                    <span className="w-5 h-5 bg-[#f5f5f7] rounded-full flex items-center justify-center text-[10px] font-medium shrink-0">3</span>
                     El turno aparece automáticamente en tu agenda.
                   </li>
                 </ul>
@@ -1194,13 +1194,13 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50/50">
-      <aside className="w-64 border-r border-slate-200 bg-white p-6 space-y-8 fixed h-full">
+    <div className="flex min-h-screen bg-[#f5f5f7]">
+      <aside className="w-64 border-r border-[#e0e0e0] bg-white p-6 space-y-8 fixed h-full">
         <div className="flex items-center gap-2 mb-8">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-[#0066cc] rounded-lg flex items-center justify-center">
             <CalendarIcon className="w-5 h-5 text-white" />
           </div>
-          <span className="font-bold text-xl tracking-tight text-slate-900">GestionSalud</span>
+          <span className="text-[17px] font-semibold tracking-tight text-[#1d1d1f]">GestionSalud</span>
         </div>
 
         <nav className="space-y-1">
@@ -1208,10 +1208,10 @@ export default function Dashboard() {
             <button
               key={item.label}
               onClick={() => setActiveTab(item.label)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-full text-[14px] font-medium transition-all ${
                 activeTab === item.label 
-                  ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20" 
-                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                  ? "bg-[#0066cc] text-white" 
+                  : "text-[#7a7a7a] hover:bg-[#f5f5f7] hover:text-[#1d1d1f]"
               }`}
             >
               <item.icon className="w-4 h-4" />
@@ -1220,10 +1220,10 @@ export default function Dashboard() {
           ))}
         </nav>
 
-        <div className="pt-8 border-t border-slate-100">
+        <div className="pt-8 border-t border-[#e0e0e0]">
           <button 
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition-all"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-full text-[14px] font-medium text-[#7a7a7a] hover:bg-[#f5f5f7] hover:text-[#1d1d1f] transition-all"
           >
             <LogOut className="w-4 h-4" />
             Cerrar Sesión
@@ -1232,22 +1232,22 @@ export default function Dashboard() {
       </aside>
 
       <main className="flex-1 ml-64 min-h-screen">
-        <header className="h-16 border-b border-slate-200 bg-white/80 backdrop-blur-md px-8 flex items-center justify-between sticky top-0 z-10">
-          <h1 className="text-lg font-semibold text-slate-800">{activeTab}</h1>
+        <header className="h-[52px] border-b border-[#e0e0e0] bg-[#f5f5f7]/80 backdrop-blur-md px-8 flex items-center justify-between sticky top-0 z-10">
+          <h1 className="text-[21px] font-semibold text-[#1d1d1f] tracking-tight">{activeTab}</h1>
           <div className="flex items-center gap-4">
             {activeTab === "Agenda" && (
-              <button onClick={() => handleOpenModal("turno")} className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg shadow-primary/20 flex items-center gap-2 hover:translate-y-[-1px] transition-all active:translate-y-[0]">
+              <button onClick={() => handleOpenModal("turno")} className="bg-[#0066cc] text-white px-6 py-2.5 rounded-full text-[14px] font-medium flex items-center gap-2 hover:opacity-90 transition">
                 <Plus className="w-4 h-4" />
                 Nuevo Turno
               </button>
             )}
             {activeTab === "Pacientes" && (
-              <button onClick={() => handleOpenModal("paciente")} className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg shadow-primary/20 flex items-center gap-2 hover:translate-y-[-1px] transition-all active:translate-y-[0]">
+              <button onClick={() => handleOpenModal("paciente")} className="bg-[#0066cc] text-white px-6 py-2.5 rounded-full text-[14px] font-medium flex items-center gap-2 hover:opacity-90 transition">
                 <Plus className="w-4 h-4" />
                 Nuevo Paciente
               </button>
             )}
-            <div className="w-8 h-8 rounded-full bg-slate-200 border border-slate-300"></div>
+            <div className="w-8 h-8 rounded-full bg-[#f5f5f7] border border-[#e0e0e0]"></div>
           </div>
         </header>
 
@@ -1276,11 +1276,11 @@ export default function Dashboard() {
           <div className="space-y-6">
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-500 uppercase">Obra Social</label>
+                <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Obra Social</label>
                 <select 
                   value={filtroObraSocial || ""}
                   onChange={(e) => setFiltroObraSocial(e.target.value || null)}
-                  className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm"
+                  className="w-full p-3 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]"
                 >
                   <option value="">Todas las obras sociales</option>
                   {obrasSociales.map(os => (
@@ -1289,19 +1289,19 @@ export default function Dashboard() {
                 </select>
               </div>
             </div>
-            <div className="flex gap-3 pt-4 border-t border-slate-100">
+            <div className="flex gap-3 pt-4 border-t border-[#e0e0e0]">
               <button 
                 onClick={() => {
                   setFiltroObraSocial(null);
                   setIsModalOpen(false);
                 }}
-                className="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors"
+                className="flex-1 bg-[#f5f5f7] text-[#7a7a7a] py-3 rounded-full font-medium text-[14px] hover:bg-[#e0e0e0] transition-colors"
               >
                 Limpiar Filtros
               </button>
               <button 
                 onClick={() => setIsModalOpen(false)}
-                className="flex-1 bg-primary text-white py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-colors"
+                className="flex-1 bg-[#0066cc] text-white py-3 rounded-full font-medium text-[14px] hover:opacity-90 transition-colors"
               >
                 Aplicar
               </button>
@@ -1310,19 +1310,19 @@ export default function Dashboard() {
         ) : modalType === "bloqueos" ? (
           <div className="space-y-6">
             <div className="space-y-4">
-              <h3 className="text-sm font-bold text-slate-700 uppercase">Bloqueos Activos</h3>
+              <h3 className="text-[14px] font-medium text-[#1d1d1f] uppercase">Bloqueos Activos</h3>
               <div className="space-y-2">
                 {bloqueos.filter(b => b.fecha === selectedDateForBloqueo).length === 0 ? (
-                  <p className="text-xs text-slate-400 italic">No hay bloqueos para este día.</p>
+                  <p className="text-[12px] text-[#7a7a7a] italic">No hay bloqueos para este día.</p>
                 ) : (
                   bloqueos.filter(b => b.fecha === selectedDateForBloqueo).map(b => (
-                    <div key={b.id} className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100">
+                    <div key={b.id} className="flex justify-between items-center p-3 bg-[#f5f5f7] rounded-lg border border-[#e0e0e0]">
                       <div>
-                        <p className="text-sm font-bold text-slate-700">
+                        <p className="text-[14px] font-medium text-[#1d1d1f]">
                           {b.tipo === "feriado" ? "Día Feriado" : `Bloqueo: ${b.hora_inicio.slice(0,5)} - ${b.hora_fin.slice(0,5)}`}
                         </p>
                       </div>
-                      <button onClick={() => handleDeleteBloqueo(b.id)} className="text-red-500 hover:text-red-700 p-1">
+                      <button onClick={() => handleDeleteBloqueo(b.id)} className="text-[#7a7a7a] hover:text-[#1d1d1f] p-1">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -1331,15 +1331,15 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <form onSubmit={handleCreateBloqueo} className="pt-6 border-t border-slate-100 space-y-4">
-              <h3 className="text-sm font-bold text-slate-700 uppercase">Nuevo Bloqueo</h3>
+            <form onSubmit={handleCreateBloqueo} className="pt-6 border-t border-[#e0e0e0] space-y-4">
+              <h3 className="text-[14px] font-medium text-[#1d1d1f] uppercase">Nuevo Bloqueo</h3>
               <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-500 uppercase">Tipo de Bloqueo</label>
+                <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Tipo de Bloqueo</label>
                 <select 
                   name="tipo" 
                   value={bloqueoTipo}
                   onChange={(e) => setBloqueoTipo(e.target.value as "parcial" | "feriado")}
-                  className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" 
+                  className="w-full p-3 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" 
                   required
                 >
                   <option value="parcial">Bloqueo de Horario</option>
@@ -1348,18 +1348,18 @@ export default function Dashboard() {
               </div>
               
               {bloqueoTipo === "parcial" && (
-                <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase">Hora Inicio</label>
-                    <select name="hora_inicio" className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" required>
+                    <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Hora Inicio</label>
+                    <select name="hora_inicio" className="w-full p-3 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" required>
                       {getAvailableHours().slice(0, -1).map(h => (
                         <option key={h} value={h}>{h} hs</option>
                       ))}
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase">Hora Fin</label>
-                    <select name="hora_fin" className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" required>
+                    <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Hora Fin</label>
+                    <select name="hora_fin" className="w-full p-3 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" required>
                       {getAvailableHours().slice(1).map(h => (
                         <option key={h} value={h}>{h} hs</option>
                       ))}
@@ -1368,49 +1368,49 @@ export default function Dashboard() {
                 </div>
               )}
               
-              <button type="submit" className="w-full bg-primary text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition">
+              <button type="submit" className="w-full bg-[#0066cc] text-white py-3 rounded-full font-medium hover:opacity-90 transition">
                 {bloqueoTipo === "feriado" ? "Marcar como Feriado" : "Aplicar Bloqueo de Horario"}
               </button>
             </form>
           </div>
         ) : modalType === "detalle_turno" ? (
           <div className="space-y-6">
-            <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                <Users className="w-6 h-6 text-primary" />
+            <div className="flex items-center gap-4 p-4 bg-[#f5f5f7] rounded-lg border border-[#e0e0e0]">
+              <div className="w-12 h-12 bg-[#0066cc]/10 rounded-full flex items-center justify-center">
+                <Users className="w-6 h-6 text-[#0066cc]" />
               </div>
               <div>
-                <h3 className="font-bold text-slate-900">{selectedTurno?.pacientes?.nombre} {selectedTurno?.pacientes?.apellido}</h3>
-                <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Paciente</p>
+                <h3 className="text-[17px] font-semibold text-[#1d1d1f]">{selectedTurno?.pacientes?.nombre} {selectedTurno?.pacientes?.apellido}</h3>
+                <p className="text-[12px] text-[#7a7a7a] uppercase font-medium tracking-wider">Paciente</p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Fecha</p>
-                <p className="text-sm font-medium text-slate-700">{selectedTurno && new Date(selectedTurno.fecha_hora).toLocaleDateString()}</p>
+              <div className="p-3 bg-[#f5f5f7] rounded-lg border border-[#e0e0e0]">
+                <p className="text-[10px] text-[#7a7a7a] font-medium uppercase mb-1">Fecha</p>
+                <p className="text-[14px] text-[#1d1d1f]">{selectedTurno && new Date(selectedTurno.fecha_hora).toLocaleDateString()}</p>
               </div>
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Hora</p>
-                <p className="text-sm font-medium text-slate-700">{selectedTurno && new Date(selectedTurno.fecha_hora).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} hs</p>
+              <div className="p-3 bg-[#f5f5f7] rounded-lg border border-[#e0e0e0]">
+                <p className="text-[10px] text-[#7a7a7a] font-medium uppercase mb-1">Hora</p>
+                <p className="text-[14px] text-[#1d1d1f]">{selectedTurno && new Date(selectedTurno.fecha_hora).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} hs</p>
               </div>
             </div>
 
-            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-              <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Motivo de Consulta</p>
-              <p className="text-sm text-slate-700">{selectedTurno?.motivo || "Sin motivo especificado"}</p>
+            <div className="p-3 bg-[#f5f5f7] rounded-lg border border-[#e0e0e0]">
+              <p className="text-[10px] text-[#7a7a7a] font-medium uppercase mb-1">Motivo de Consulta</p>
+              <p className="text-[14px] text-[#1d1d1f]">{selectedTurno?.motivo || "Sin motivo especificado"}</p>
             </div>
 
-            <div className="flex gap-3 pt-4 border-t border-slate-100">
+            <div className="flex gap-3 pt-4 border-t border-[#e0e0e0]">
               <button 
                 onClick={() => handleCancelTurno(selectedTurno.id)}
-                className="flex-1 bg-red-50 text-red-600 py-3 rounded-xl font-bold text-sm hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
+                className="flex-1 bg-[#f5f5f7] text-[#7a7a7a] py-3 rounded-full font-medium text-[14px] hover:bg-[#e0e0e0] transition-colors flex items-center justify-center gap-2"
               >
                 <X className="w-4 h-4" /> Cancelar
               </button>
               <button 
                 onClick={() => handleOpenModal("editar_turno")}
-                className="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors"
+                className="flex-1 bg-[#f5f5f7] text-[#1d1d1f] py-3 rounded-full font-medium text-[14px] hover:bg-[#e0e0e0] transition-colors"
               >
                 Editar
               </button>
@@ -1430,38 +1430,38 @@ export default function Dashboard() {
             <>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Nombre</label>
-                  <input name="nombre" type="text" className="w-full p-2 bg-slate-50 border-none rounded-lg text-sm" defaultValue={modalType === "editar_paciente" ? selectedPaciente?.nombre : ""} required />
+                  <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Nombre</label>
+                  <input name="nombre" type="text" className="w-full p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" defaultValue={modalType === "editar_paciente" ? selectedPaciente?.nombre : ""} required />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Apellido</label>
-                  <input name="apellido" type="text" className="w-full p-2 bg-slate-50 border-none rounded-lg text-sm" defaultValue={modalType === "editar_paciente" ? selectedPaciente?.apellido : ""} required />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase">DNI</label>
-                  <input name="dni" type="text" className="w-full p-2 bg-slate-50 border-none rounded-lg text-sm" defaultValue={modalType === "editar_paciente" ? selectedPaciente?.dni : ""} required />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Fecha de Nacimiento</label>
-                  <input name="fecha_nacimiento" type="date" className="w-full p-2 bg-slate-50 border-none rounded-lg text-sm" defaultValue={modalType === "editar_paciente" ? selectedPaciente?.fecha_nacimiento : ""} required />
+                  <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Apellido</label>
+                  <input name="apellido" type="text" className="w-full p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" defaultValue={modalType === "editar_paciente" ? selectedPaciente?.apellido : ""} required />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Teléfono</label>
-                  <input name="telefono" type="tel" className="w-full p-2 bg-slate-50 border-none rounded-lg text-sm" defaultValue={modalType === "editar_paciente" ? selectedPaciente?.telefono : ""} required />
+                  <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">DNI</label>
+                  <input name="dni" type="text" className="w-full p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" defaultValue={modalType === "editar_paciente" ? selectedPaciente?.dni : ""} required />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Email (Opcional)</label>
-                  <input name="email" type="email" className="w-full p-2 bg-slate-50 border-none rounded-lg text-sm" defaultValue={modalType === "editar_paciente" ? selectedPaciente?.email : ""} />
+                  <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Fecha de Nacimiento</label>
+                  <input name="fecha_nacimiento" type="date" className="w-full p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" defaultValue={modalType === "editar_paciente" ? selectedPaciente?.fecha_nacimiento : ""} required />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Obra Social</label>
-                  <select name="obra_social_id" className="w-full p-2 bg-slate-50 border-none rounded-lg text-sm" defaultValue={modalType === "editar_paciente" ? selectedPaciente?.obra_social_id : ""} required>
+                  <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Teléfono</label>
+                  <input name="telefono" type="tel" className="w-full p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" defaultValue={modalType === "editar_paciente" ? selectedPaciente?.telefono : ""} required />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Email (Opcional)</label>
+                  <input name="email" type="email" className="w-full p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" defaultValue={modalType === "editar_paciente" ? selectedPaciente?.email : ""} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Obra Social</label>
+                  <select name="obra_social_id" className="w-full p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" defaultValue={modalType === "editar_paciente" ? selectedPaciente?.obra_social_id : ""} required>
                     <option value="" disabled>Seleccionar...</option>
                     {obrasSociales.map(os => (
                       <option key={os.id} value={os.id}>{os.nombre}</option>
@@ -1469,15 +1469,15 @@ export default function Dashboard() {
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Nro Afiliado</label>
-                  <input name="nro_afiliado" type="text" className="w-full p-2 bg-slate-50 border-none rounded-lg text-sm" defaultValue={modalType === "editar_paciente" ? selectedPaciente?.nro_afiliado : ""} />
+                  <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Nro Afiliado</label>
+                  <input name="nro_afiliado" type="text" className="w-full p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" defaultValue={modalType === "editar_paciente" ? selectedPaciente?.nro_afiliado : ""} />
                 </div>
               </div>
             </>
           ) : modalType === "turno" || modalType === "editar_turno" ? (
             <>
               <div className="space-y-1 relative" ref={pacienteDropdownRef}>
-                <label className="text-xs font-bold text-slate-500 uppercase">Paciente</label>
+                <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Paciente</label>
                 <input
                   type="text"
                   value={pacienteSearchQuery}
@@ -1487,13 +1487,13 @@ export default function Dashboard() {
                   }}
                   onFocus={() => setShowPacienteDropdown(true)}
                   placeholder="Buscar por nombre, apellido o DNI..."
-                  className="w-full p-2 bg-slate-50 border-none rounded-lg text-sm"
+                  className="w-full p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]"
                   autoComplete="off"
                 />
                 {showPacienteDropdown && (
-                  <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-[#e0e0e0] rounded-lg max-h-60 overflow-y-auto">
                     {filteredPacientesForTurno.length === 0 ? (
-                      <div className="p-3 text-sm text-slate-500 text-center">
+                      <div className="p-3 text-[14px] text-[#7a7a7a] text-center">
                         No hay coincidencias
                       </div>
                     ) : (
@@ -1506,12 +1506,12 @@ export default function Dashboard() {
                             setPacienteSearchQuery(`${p.nombre} ${p.apellido}`);
                             setShowPacienteDropdown(false);
                           }}
-                          className={`w-full text-left p-3 text-sm hover:bg-slate-50 transition-colors ${selectedPacienteForTurno?.id === p.id ? 'bg-primary/10' : ''}`}
+                          className={`w-full text-left p-3 text-[14px] hover:bg-[#f5f5f7] transition-colors ${selectedPacienteForTurno?.id === p.id ? 'bg-[#0066cc]/10' : ''}`}
                         >
-                          <div className="font-medium text-slate-900">
+                          <div className="font-medium text-[#1d1d1f]">
                             {p.nombre} {p.apellido}
                           </div>
-                          <div className="text-xs text-slate-500">
+                          <div className="text-[12px] text-[#7a7a7a]">
                             DNI: {p.dni}
                           </div>
                         </button>
@@ -1522,57 +1522,57 @@ export default function Dashboard() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Fecha</label>
-                  <input name="fecha" type="date" className="w-full p-2 bg-slate-50 border-none rounded-lg text-sm" defaultValue={modalType === "editar_turno" ? new Date(selectedTurno?.fecha_hora).toISOString().split('T')[0] : ""} required />
+                  <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Fecha</label>
+                  <input name="fecha" type="date" className="w-full p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" defaultValue={modalType === "editar_turno" ? new Date(selectedTurno?.fecha_hora).toISOString().split('T')[0] : ""} required />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Hora</label>
-                  <input name="hora" type="time" className="w-full p-2 bg-slate-50 border-none rounded-lg text-sm" defaultValue={modalType === "editar_turno" ? new Date(selectedTurno?.fecha_hora).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : ""} required />
+                  <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Hora</label>
+                  <input name="hora" type="time" className="w-full p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" defaultValue={modalType === "editar_turno" ? new Date(selectedTurno?.fecha_hora).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : ""} required />
                 </div>
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-500 uppercase">Motivo</label>
-                <textarea name="motivo" className="w-full p-2 bg-slate-50 border-none rounded-lg text-sm" rows={3} defaultValue={modalType === "editar_turno" ? selectedTurno?.motivo : ""}></textarea>
+                <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Motivo</label>
+                <textarea name="motivo" className="w-full p-2.5 bg-[#f5f5f7] border-none rounded-lg text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" rows={3} defaultValue={modalType === "editar_turno" ? selectedTurno?.motivo : ""}></textarea>
               </div>
             </>
           ) : modalType === "obra_social" || modalType === "editar_obra_social" ? (
             <>
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-500 uppercase">Nombre de la Obra Social</label>
-                <input name="nombre" type="text" className="w-full p-2 bg-slate-50 border-none rounded-lg text-sm" defaultValue={modalType === "editar_obra_social" ? selectedOS?.nombre : ""} placeholder="Ej: OSDE" required />
+                <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Nombre de la Obra Social</label>
+                <input name="nombre" type="text" className="w-full p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" defaultValue={modalType === "editar_obra_social" ? selectedOS?.nombre : ""} placeholder="Ej: OSDE" required />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-500 uppercase">Código Nacional (Opcional)</label>
-                <input name="codigo_nacional" type="text" className="w-full p-2 bg-slate-50 border-none rounded-lg text-sm" defaultValue={modalType === "editar_obra_social" ? selectedOS?.codigo_nacional : ""} placeholder="Ej: 400302" />
+                <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Código Nacional (Opcional)</label>
+                <input name="codigo_nacional" type="text" className="w-full p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" defaultValue={modalType === "editar_obra_social" ? selectedOS?.codigo_nacional : ""} placeholder="Ej: 400302" />
               </div>
             </>
           ) : (
             <>
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-500 uppercase">Paciente</label>
-                <p className="text-sm font-bold text-slate-900">{selectedPaciente?.nombre} {selectedPaciente?.apellido}</p>
+                <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Paciente</label>
+                <p className="text-[17px] font-semibold text-[#1d1d1f]">{selectedPaciente?.nombre} {selectedPaciente?.apellido}</p>
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-500 uppercase">Fecha de Evolución</label>
-                <input name="fecha" type="date" className="w-full p-2 bg-slate-50 border-none rounded-lg text-sm" defaultValue={new Date().toISOString().split('T')[0]} required />
+                <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Fecha de Evolución</label>
+                <input name="fecha" type="date" className="w-full p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" defaultValue={new Date().toISOString().split('T')[0]} required />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-500 uppercase">Contenido de la Evolución</label>
+                <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Contenido de la Evolución</label>
                 <textarea 
                   name="contenido"
-                  className="w-full p-3 bg-slate-50 border-none rounded-lg text-sm focus:ring-2 ring-primary/20" 
+                  className="w-full p-3 bg-[#f5f5f7] border-none rounded-lg text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" 
                   rows={8} 
                   placeholder="Escribe aquí el desarrollo de la consulta..."
                   required
                 ></textarea>
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-500 uppercase">Adjuntos (Opcional)</label>
-                <input type="file" className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" multiple />
+                <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Adjuntos (Opcional)</label>
+                <input type="file" className="w-full text-[12px] text-[#7a7a7a] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[12px] file:font-medium file:bg-[#0066cc]/10 file:text-[#0066cc] hover:file:bg-[#0066cc]/20" multiple />
               </div>
             </>
           )}
-          <button type="submit" className="w-full bg-primary text-white py-3 rounded-xl font-bold mt-4 shadow-lg shadow-primary/20 hover:opacity-90 transition">
+          <button type="submit" className="w-full bg-[#0066cc] text-white py-3 rounded-full font-medium mt-4 hover:opacity-90 transition">
             {modalType === "paciente" ? "Guardar Paciente" : 
              modalType === "editar_paciente" ? "Actualizar Paciente" :
              modalType === "turno" ? "Confirmar Turno" : 
