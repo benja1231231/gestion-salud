@@ -157,17 +157,17 @@ export default function ReservarTurno() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-        <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100 max-w-md w-full text-center space-y-6">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-            <CheckCircle2 className="w-10 h-10 text-green-600" />
+      <div className="min-h-screen bg-[#f5f5f7] flex items-center justify-center p-6">
+        <div className="bg-white p-8 rounded-lg border border-[#e0e0e0] max-w-md w-full text-center space-y-6">
+          <div className="w-20 h-20 bg-[#f5f5f7] rounded-full flex items-center justify-center mx-auto">
+            <CheckCircle2 className="w-10 h-10 text-[#0066cc]" />
           </div>
-          <h2 className="text-2xl font-bold text-slate-900">¡Turno Confirmado!</h2>
-          <p className="text-slate-600">
+          <h2 className="text-[21px] font-semibold text-[#1d1d1f] tracking-tight">¡Turno Confirmado!</h2>
+          <p className="text-[14px] text-[#7a7a7a]">
             Tu turno con el/la Dr/Dra {medicoInfo?.apellido} ha sido reservado para el día <strong>{new Date(selectedDate).toLocaleDateString()}</strong> a las <strong>{selectedTime} hs</strong>.
           </p>
           <div className="pt-4">
-            <p className="text-xs text-slate-400">Puedes cerrar esta ventana.</p>
+            <p className="text-[12px] text-[#7a7a7a]">Puedes cerrar esta ventana.</p>
           </div>
         </div>
       </div>
@@ -175,16 +175,16 @@ export default function ReservarTurno() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 flex flex-col items-center">
+    <div className="min-h-screen bg-[#f5f5f7] p-6 flex flex-col items-center">
       <div className="max-w-xl w-full space-y-8 mt-12">
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-slate-900">Reservar Turno Online</h1>
-          <p className="text-slate-500">Dr/Dra {medicoInfo?.nombre} {medicoInfo?.apellido}</p>
+          <h1 className="text-[28px] font-semibold text-[#1d1d1f] tracking-tight">Reservar Turno Online</h1>
+          <p className="text-[14px] text-[#7a7a7a]">Dr/Dra {medicoInfo?.nombre} {medicoInfo?.apellido}</p>
         </div>
 
-        <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
+        <div className="bg-white p-8 rounded-lg border border-[#e0e0e0]">
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3 text-red-600 text-sm">
+            <div className="mb-6 p-4 bg-[#f5f5f7] border border-[#e0e0e0] rounded-lg flex items-center gap-3 text-[#1d1d1f] text-[14px]">
               <AlertCircle className="w-5 h-5" />
               {error}
             </div>
@@ -193,12 +193,12 @@ export default function ReservarTurno() {
           {step === 1 && (
             <form onSubmit={handleCheckDni} className="space-y-6">
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700 uppercase tracking-wider">Ingresa tu DNI</label>
+                <label className="text-[12px] font-medium text-[#7a7a7a] uppercase tracking-wider">Ingresa tu DNI</label>
                 <input 
                   type="text" 
                   value={dni}
                   onChange={(e) => setDni(e.target.value)}
-                  className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-2xl text-lg font-medium transition-all outline-none"
+                  className="w-full p-4 bg-[#f5f5f7] border-none rounded-full text-[17px] font-medium transition-all outline-none focus:ring-2 focus:ring-[#0066cc]"
                   placeholder="Ej: 12345678"
                   required
                 />
@@ -206,7 +206,7 @@ export default function ReservarTurno() {
               <button 
                 type="submit" 
                 disabled={loading}
-                className="w-full bg-primary text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-primary/20 hover:opacity-90 transition disabled:opacity-50"
+                className="w-full bg-[#0066cc] text-white py-4 rounded-full font-medium text-[17px] hover:opacity-90 transition disabled:opacity-50"
               >
                 {loading ? "Verificando..." : "Continuar"}
               </button>
@@ -215,38 +215,38 @@ export default function ReservarTurno() {
 
           {step === 2 && (
             <form onSubmit={handleRegister} className="space-y-4">
-              <button type="button" onClick={() => setStep(1)} className="text-slate-400 hover:text-slate-600 flex items-center gap-1 text-sm mb-4">
+              <button type="button" onClick={() => setStep(1)} className="text-[#7a7a7a] hover:text-[#1d1d1f] flex items-center gap-1 text-[14px] mb-4">
                 <ArrowLeft className="w-4 h-4" /> Volver
               </button>
-              <h3 className="text-xl font-bold text-slate-900 mb-4">Completar Registro</h3>
+              <h3 className="text-[21px] font-semibold text-[#1d1d1f] tracking-tight mb-4">Completar Registro</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Nombre</label>
-                  <input name="nombre" type="text" className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" required />
+                  <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Nombre</label>
+                  <input name="nombre" type="text" className="w-full p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" required />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Apellido</label>
-                  <input name="apellido" type="text" className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" required />
+                  <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Apellido</label>
+                  <input name="apellido" type="text" className="w-full p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" required />
                 </div>
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-500 uppercase">Fecha de Nacimiento</label>
-                <input name="fecha_nacimiento" type="date" className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" required />
+                <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Fecha de Nacimiento</label>
+                <input name="fecha_nacimiento" type="date" className="w-full p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" required />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Teléfono</label>
-                  <input name="telefono" type="tel" className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" required />
+                  <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Teléfono</label>
+                  <input name="telefono" type="tel" className="w-full p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" required />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Email</label>
-                  <input name="email" type="email" className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" />
+                  <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Email</label>
+                  <input name="email" type="email" className="w-full p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Obra Social</label>
-                  <select name="obra_social_id" className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" required defaultValue="">
+                  <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Obra Social</label>
+                  <select name="obra_social_id" className="w-full p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" required defaultValue="">
                     <option value="" disabled>Seleccionar...</option>
                     {obrasSociales.map(os => (
                       <option key={os.id} value={os.id}>{os.nombre}</option>
@@ -254,14 +254,14 @@ export default function ReservarTurno() {
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Nro Afiliado</label>
-                  <input name="nro_afiliado" type="text" className="w-full p-3 bg-slate-50 border-none rounded-xl text-sm" />
+                  <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Nro Afiliado</label>
+                  <input name="nro_afiliado" type="text" className="w-full p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" />
                 </div>
               </div>
               <button 
                 type="submit" 
                 disabled={loading}
-                className="w-full bg-primary text-white py-4 rounded-2xl font-bold text-lg mt-4 shadow-lg shadow-primary/20 hover:opacity-90 transition disabled:opacity-50"
+                className="w-full bg-[#0066cc] text-white py-4 rounded-full font-medium text-[17px] mt-4 hover:opacity-90 transition disabled:opacity-50"
               >
                 {loading ? "Registrando..." : "Registrar y Continuar"}
               </button>
@@ -270,32 +270,32 @@ export default function ReservarTurno() {
 
           {step === 3 && (
             <div className="space-y-6">
-              <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                  <User className="w-6 h-6 text-primary" />
+              <div className="flex items-center gap-4 p-4 bg-[#f5f5f7] rounded-lg border border-[#e0e0e0]">
+                <div className="w-12 h-12 bg-[#0066cc]/10 rounded-full flex items-center justify-center">
+                  <User className="w-6 h-6 text-[#0066cc]" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900">{paciente.nombre} {paciente.apellido}</h3>
-                  <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Paciente</p>
+                  <h3 className="text-[17px] font-medium text-[#1d1d1f]">{paciente.nombre} {paciente.apellido}</h3>
+                  <p className="text-[12px] text-[#7a7a7a] uppercase font-medium tracking-wider">Paciente</p>
                 </div>
               </div>
 
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                  <label className="text-[12px] font-medium text-[#7a7a7a] uppercase tracking-wider flex items-center gap-2">
                     <CalendarIcon className="w-4 h-4" /> Selecciona el Día
                   </label>
                   <input 
                     type="date" 
                     min={new Date(Date.now() + 86400000).toISOString().split('T')[0]} // No hoy
-                    className="w-full p-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 ring-primary/20"
+                    className="w-full p-4 bg-[#f5f5f7] border-none rounded-full outline-none focus:ring-2 focus:ring-[#0066cc] text-[14px]"
                     onChange={(e) => setSelectedDate(e.target.value)}
                   />
                 </div>
 
                 {selectedDate && (
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                    <label className="text-[12px] font-medium text-[#7a7a7a] uppercase tracking-wider flex items-center gap-2">
                       <Clock className="w-4 h-4" /> Selecciona la Hora
                     </label>
                     <div className="grid grid-cols-3 gap-2">
@@ -304,12 +304,12 @@ export default function ReservarTurno() {
                           key={slot.hora}
                           disabled={!slot.disponible}
                           onClick={() => setSelectedTime(slot.hora)}
-                          className={`p-3 rounded-xl text-sm font-bold transition-all ${
+                          className={`p-3 rounded-full text-[14px] font-medium transition-all ${
                             selectedTime === slot.hora 
-                              ? 'bg-primary text-white shadow-lg shadow-primary/20' 
+                              ? 'bg-[#0066cc] text-white' 
                               : slot.disponible 
-                                ? 'bg-slate-50 text-slate-600 hover:bg-slate-100' 
-                                : 'bg-slate-50 text-slate-300 cursor-not-allowed line-through'
+                                ? 'bg-[#f5f5f7] text-[#1d1d1f] hover:bg-[#e0e0e0]' 
+                                : 'bg-[#f5f5f7] text-[#d2d2d7] cursor-not-allowed line-through'
                           }`}
                         >
                           {slot.hora}
@@ -322,7 +322,7 @@ export default function ReservarTurno() {
                 <button 
                   onClick={handleConfirmTurno}
                   disabled={!selectedDate || !selectedTime || loading}
-                  className="w-full bg-primary text-white py-4 rounded-2xl font-bold text-lg mt-6 shadow-lg shadow-primary/20 hover:opacity-90 transition disabled:opacity-50"
+                  className="w-full bg-[#0066cc] text-white py-4 rounded-full font-medium text-[17px] mt-6 hover:opacity-90 transition disabled:opacity-50"
                 >
                   {loading ? "Confirmando..." : "Confirmar Turno"}
                 </button>
