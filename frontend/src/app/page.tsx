@@ -12,7 +12,8 @@ import { QRCodeSVG } from "qrcode.react";
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Agenda");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState<"paciente" | "turno" | "evolucion" | "detalle_turno" | "editar_paciente" | "editar_turno" | "obra_social" | "editar_obra_social" | "bloqueos" | "filtros">("turno");
+  const [modalType, setModalType] = useState<"paciente" | "turno" | "evolucion" | "detalle_turno" | "editar_paciente" | "editar_turno" | "obra_social" | "editar_obra_social" | "bloqueos" | "filtros" | "vista_diaria">("turno");
+  const [selectedDateForVistaDiaria, setSelectedDateForVistaDiaria] = useState<string | null>(null);
   const [filtroObraSocial, setFiltroObraSocial] = useState<string | null>(null);
   const [selectedTurno, setSelectedTurno] = useState<any>(null);
   const [selectedDateForBloqueo, setSelectedDateForBloqueo] = useState<string | null>(null);
@@ -671,6 +672,12 @@ export default function Dashboard() {
                     return (
                       <div 
                         key={i} 
+                        onClick={() => {
+                          if (!day) return;
+                          setSelectedDateForVistaDiaria(dateStr);
+                          setModalType("vista_diaria");
+                          setIsModalOpen(true);
+                        }}
                         onContextMenu={(e) => {
                           if (!day) return;
                           e.preventDefault();
@@ -690,24 +697,7 @@ export default function Dashboard() {
                                 {day}
                               </span>
                               {isFeriado && <div className="text-[10px] bg-[#f5f5f7] text-[#7a7a7a] px-2 rounded-full font-medium">Feriado</div>}
-                              {hasBloqueos && !isFeriado && <Clock className="w-3 h-3 text-[#7a7a7a]" />}
-                            </div>
-                            <div className="mt-1 space-y-1 overflow-y-auto max-h-[80%] scrollbar-hide">
-                              {dayTurnos.filter(t => t.estado !== 'cancelado').map(t => (
-                                <div 
-                                  key={t.id} 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setSelectedTurno(t);
-                                    setModalType("detalle_turno");
-                                    setIsModalOpen(true);
-                                  }}
-                                  className="p-1.5 bg-[#0066cc]/10 rounded-full text-[10px] font-medium text-[#0066cc] truncate hover:bg-[#0066cc]/20 transition-colors"
-                                  title={`${new Date(t.fecha_hora).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ${t.pacientes?.nombre}`}
-                                >
-                                  {new Date(t.fecha_hora).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} {t.pacientes?.nombre}
-                                </div>
-                              ))}
+                              {(hasBloqueos || dayTurnos.filter(t => t.estado !== 'cancelado').length > 0) && !isFeriado && <div className="w-2 h-2 bg-[#0066cc] rounded-full"></div>}
                             </div>
                           </>
                         )}
@@ -1269,10 +1259,134 @@ export default function Dashboard() {
           modalType === "editar_obra_social" ? "Editar Obra Social" :
           modalType === "bloqueos" ? `Gestionar Bloqueos - ${selectedDateForBloqueo}` :
           modalType === "filtros" ? "Filtros de Pacientes" :
+          modalType === "vista_diaria" ? (() => {
+            if (!selectedDateForVistaDiaria) return "Agenda del Día";
+            const [year, month, day] = selectedDateForVistaDiaria.split('-').map(Number);
+            const date = new Date(year, month - 1, day);
+            return date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+          })() :
           "Nueva Evolución Médica"
         }
       >
-        {modalType === "filtros" ? (
+        {modalType === "vista_diaria" ? (
+          <div className="space-y-4">
+            {(() => {
+              if (!selectedDateForVistaDiaria || !medicoConfig) return null;
+              
+              const [year, month, day] = selectedDateForVistaDiaria.split('-').map(Number);
+              const date = new Date(year, month - 1, day);
+              const isToday = date.toDateString() === new Date().toDateString();
+              
+              // Generar todos los slots horarios
+              const [h_inicio, m_inicio] = medicoConfig.inicio.split(':').map(Number);
+              const [h_fin, m_fin] = medicoConfig.fin.split(':').map(Number);
+              const duracion = medicoConfig.duracion_turno;
+              
+              const slots = [];
+              let current = new Date(date);
+              current.setHours(h_inicio, m_inicio, 0, 0);
+              const end = new Date(date);
+              end.setHours(h_fin, m_fin, 0, 0);
+              
+              while (current < end) {
+                const slotStart = new Date(current);
+                current.setMinutes(current.getMinutes() + duracion);
+                const slotEnd = new Date(current);
+                slots.push({ start: slotStart, end: slotEnd });
+              }
+              
+              // Obtener turnos y bloqueos para este día
+              const dayTurnos = turnos.filter(t => {
+                const tDate = new Date(t.fecha_hora);
+                return tDate.getFullYear() === year && tDate.getMonth() === month - 1 && tDate.getDate() === day && t.estado !== 'cancelado';
+              });
+              
+              const dayBloqueos = bloqueos.filter(b => b.fecha === selectedDateForVistaDiaria);
+              const isFeriado = dayBloqueos.some(b => b.tipo === 'feriado');
+              
+              return (
+                <>
+                  <div className="border-b border-[#e0e0e0] pb-4">
+                    <h2 className="text-[21px] font-semibold text-[#1d1d1f] tracking-tight">
+                      {date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                      {isToday && <span className="ml-2 text-[12px] bg-[#0066cc]/10 text-[#0066cc] px-2 py-0.5 rounded-full font-medium">HOY</span>}
+                    </h2>
+                    {isFeriado && <p className="text-[14px] text-[#7a7a7a] mt-1">Día Feriado (Cerrado)</p>}
+                  </div>
+                  
+                  <div className="space-y-2 max-h-[600px] overflow-y-auto">
+                    {slots.map((slot, idx) => {
+                      const slotStartStr = slot.start.toISOString();
+                      const slotEndStr = slot.end.toISOString();
+                      
+                      // Buscar turno que cae en este slot
+                      const turno = dayTurnos.find(t => {
+                        const tDate = new Date(t.fecha_hora);
+                        return tDate >= slot.start && tDate < slot.end;
+                      });
+                      
+                      // Buscar bloqueo que cubre este slot
+                      const bloqueo = dayBloqueos.find(b => {
+                        if (b.tipo === 'feriado') return true;
+                        if (!b.hora_inicio || !b.hora_fin) return false;
+                        
+                        const bloqueoStart = new Date(date);
+                        const [bh, bm] = b.hora_inicio.split(':').map(Number);
+                        bloqueoStart.setHours(bh, bm, 0, 0);
+                        
+                        const bloqueoEnd = new Date(date);
+                        const [beh, bem] = b.hora_fin.split(':').map(Number);
+                        bloqueoEnd.setHours(beh, bem, 0, 0);
+                        
+                        return slot.start < bloqueoEnd && slot.end > bloqueoStart;
+                      });
+                      
+                      const isBloqueado = bloqueo !== undefined;
+                      
+                      return (
+                        <div key={idx} className="border-t border-[#e0e0e0]">
+                          <div className="flex items-center">
+                            <div className="w-20 text-[12px] text-[#7a7a7a] font-medium">
+                              {slot.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                            <div className="flex-1">
+                              {isBloqueado ? (
+                                <div className="p-3 bg-[#ffcccc] border-l-4 border-[#ff6666]">
+                                  <p className="text-[14px] text-[#cc0000] font-medium">
+                                    X -HORARIO BLOQUEADO
+                                  </p>
+                                </div>
+                              ) : turno ? (
+                                <div 
+                                  className="p-3 bg-[#e8f4ff] border-l-4 border-[#0066cc] cursor-pointer hover:bg-[#d0e8ff] transition-colors"
+                                  onClick={() => {
+                                    setSelectedTurno(turno);
+                                    setModalType("detalle_turno");
+                                    setIsModalOpen(true);
+                                  }}
+                                >
+                                  <div className="text-[12px] text-[#7a7a7a] mb-1">
+                                    {slot.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {slot.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  </div>
+                                  <p className="text-[14px] text-[#1d1d1f] font-medium">
+                                    {turno.pacientes?.apellido?.toUpperCase()} {turno.pacientes?.nombre}
+                                  </p>
+                                </div>
+                              ) : (
+                                <div className="p-3 bg-white">
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+        ) : modalType === "filtros" ? (
           <div className="space-y-6">
             <div className="space-y-4">
               <div className="space-y-2">
