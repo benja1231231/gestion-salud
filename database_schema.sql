@@ -6,9 +6,10 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- 2. ENUMS
 DO $$ BEGIN
-    CREATE TYPE estado_turno AS ENUM ('pendiente', 'llegó', 'en_espera', 'en_consultorio', 'finalizado', 'cancelado');
+    CREATE TYPE estado_turno AS ENUM ('pendiente', 'llegó', 'en_espera', 'en_consultorio', 'finalizado', 'cancelado', 'ausente');
 EXCEPTION
-    WHEN duplicate_object THEN null;
+    WHEN duplicate_object THEN 
+        ALTER TYPE estado_turno ADD VALUE IF NOT EXISTS 'ausente';
 END $$;
 
 -- 3. TABLAS

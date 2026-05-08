@@ -1,9 +1,9 @@
 "use client"
 
-import { Clock, User, CheckCircle2, PlayCircle, LogIn } from "lucide-react"
+import { Clock, User, CheckCircle2, PlayCircle, LogIn, UserX } from "lucide-react"
 import { createClient } from "@/lib/supabase"
 
-export type EstadoTurno = "pendiente" | "llegó" | "en_espera" | "en_consultorio" | "finalizado" | "cancelado"
+export type EstadoTurno = "pendiente" | "llegó" | "en_espera" | "en_consultorio" | "finalizado" | "cancelado" | "ausente"
 
 interface WaitingRoomProps {
   turnos: any[]
@@ -30,7 +30,7 @@ export default function WaitingRoom({ turnos, onUpdate, onVerHC }: WaitingRoomPr
     .filter(t => {
       const hoy = new Date().toLocaleDateString()
       const fechaTurno = new Date(t.fecha_hora).toLocaleDateString()
-      return hoy === fechaTurno && t.estado !== "cancelado" && t.estado !== "finalizado"
+      return hoy === fechaTurno && t.estado !== "cancelado" && t.estado !== "finalizado" && t.estado !== "ausente"
     })
     .sort((a, b) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime())
 
@@ -73,13 +73,23 @@ export default function WaitingRoom({ turnos, onUpdate, onVerHC }: WaitingRoomPr
             
             <div className="flex items-center gap-2">
               {t.estado === "pendiente" && (
-                <button 
-                  onClick={() => cambiarEstado(t.id, "llegó")}
-                  className="flex-1 text-[14px] py-2 rounded-full bg-[#0066cc] text-white hover:opacity-90 font-medium transition"
-                >
-                  <LogIn className="w-4 h-4 inline mr-1" />
-                  Marcar Llegada
-                </button>
+                <>
+                  <button 
+                    onClick={() => cambiarEstado(t.id, "llegó")}
+                    className="flex-[2] text-[14px] py-2 rounded-full bg-[#0066cc] text-white hover:opacity-90 font-medium transition"
+                  >
+                    <LogIn className="w-4 h-4 inline mr-1" />
+                    Marcar Llegada
+                  </button>
+                  <button 
+                    onClick={() => cambiarEstado(t.id, "ausente")}
+                    className="flex-1 text-[14px] py-2 rounded-full bg-[#f5f5f7] text-[#7a7a7a] hover:bg-[#e0e0e0] font-medium transition flex items-center justify-center gap-1"
+                    title="Marcar como ausente"
+                  >
+                    <UserX className="w-4 h-4" />
+                    Ausente
+                  </button>
+                </>
               )}
               {t.estado === "llegó" && (
                 <button 
