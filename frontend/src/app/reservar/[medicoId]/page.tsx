@@ -12,6 +12,7 @@ export default function ReservarTurno() {
   const [paciente, setPaciente] = useState<any>(null)
   const [medicoInfo, setMedicoInfo] = useState<any>(null)
   const [loading, setLoading] = useState(false)
+  const [loadingInitial, setLoadingInitial] = useState(true)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState(false)
   const [obrasSociales, setObrasSociales] = useState<any[]>([])
@@ -25,6 +26,7 @@ export default function ReservarTurno() {
 
   useEffect(() => {
     const fetchInitialData = async () => {
+      setLoadingInitial(true)
       try {
         const res = await fetch(`${API_URL}/medico/${medicoId}`)
         if (res.ok) setMedicoInfo(await res.json())
@@ -37,9 +39,14 @@ export default function ReservarTurno() {
         if (data) setObrasSociales(data)
       } catch (err) {
         console.error("Error fetching data:", err)
+        setError("Error al cargar los datos del médico.")
+      } finally {
+        setLoadingInitial(false)
       }
     }
-    fetchInitialData()
+    if (medicoId) {
+      fetchInitialData()
+    }
   }, [medicoId])
 
   const [availableSlots, setAvailableSlots] = useState<any[]>([])
@@ -153,6 +160,29 @@ export default function ReservarTurno() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (loadingInitial) {
+    return (
+      <div className="min-h-screen bg-[#f5f5f7] flex items-center justify-center p-6">
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 border-4 border-[#e0e0e0] border-t-[#0066cc] rounded-full animate-spin mx-auto"></div>
+          <p className="text-[14px] text-[#7a7a7a]">Cargando...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!medicoInfo) {
+    return (
+      <div className="min-h-screen bg-[#f5f5f7] flex items-center justify-center p-6">
+        <div className="bg-white p-8 rounded-lg border border-[#e0e0e0] max-w-md w-full text-center space-y-4">
+          <AlertCircle className="w-12 h-12 text-[#ff6666] mx-auto" />
+          <h2 className="text-[21px] font-semibold text-[#1d1d1f]">Médico no encontrado</h2>
+          <p className="text-[14px] text-[#7a7a7a]">El link de reserva no es válido. Por favor, verifica el enlace.</p>
+        </div>
+      </div>
+    )
   }
 
   if (success) {
