@@ -128,6 +128,7 @@ CREATE INDEX IF NOT EXISTS idx_turnos_medico_fecha ON turnos(medico_id, fecha_ho
 CREATE INDEX IF NOT EXISTS idx_pacientes_dni ON pacientes(dni);
 CREATE INDEX IF NOT EXISTS idx_evoluciones_paciente ON evoluciones(paciente_id);
 CREATE INDEX IF NOT EXISTS idx_evoluciones_created_at ON evoluciones(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_obras_sociales_medico ON obras_sociales(medico_id);
 
 -- 6. AUTOMATIZACIÓN (TRIGGERS)
 

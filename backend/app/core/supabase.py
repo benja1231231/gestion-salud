@@ -1,7 +1,11 @@
 from supabase import create_client, Client
 from app.core.config import settings
 
+# Cliente singleton para evitar reconexiones costosas
+_supabase_client: Client = None
+
 def get_supabase() -> Client:
-    # Usamos SERVICE_ROLE_KEY para que el backend ignore RLS
-    # Esto permite descargar recetas y gestionar datos sin fallos de permisos
-    return create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
+    global _supabase_client
+    if _supabase_client is None:
+        _supabase_client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
+    return _supabase_client
