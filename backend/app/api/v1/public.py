@@ -57,7 +57,23 @@ async def agendar_turno_publico(turno: TurnoCreate, service: AgendaService = Dep
 async def get_medico_info(medico_id: UUID, service: MedicalService = Depends(get_medical_service)):
     medico = await service.repository.get_medico_by_id(medico_id)
     if not medico:
-        raise HTTPException(status_code=404, detail="Médico no encontrado")
+        try:
+            new_medico = {
+                "id": str(medico_id),
+                "nombre": "Nuevo",
+                "apellido": "Médico",
+                "matricula": "PENDIENTE",
+                "especialidad": "General"
+            }
+            client = get_supabase()
+            res = client.table("medicos").insert(new_medico).execute()
+            if res.data:
+                medico = res.data[0]
+            else:
+                raise HTTPException(status_code=404, detail="Médico no encontrado")
+        except Exception as e:
+            print(f"Error creating medico profile: {e}")
+            raise HTTPException(status_code=404, detail="Médico no encontrado")
     return {"nombre": medico["nombre"], "apellido": medico["apellido"]}
 
 @router.get("/disponibilidad/{medico_id}")
