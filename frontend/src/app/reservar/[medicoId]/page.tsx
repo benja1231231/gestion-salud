@@ -28,15 +28,22 @@ export default function ReservarTurno() {
     const fetchInitialData = async () => {
       setLoadingInitial(true)
       try {
-        const res = await fetch(`${API_URL}/medico/${medicoId}`)
-        if (res.ok) setMedicoInfo(await res.json())
+        const [medicoRes, osRes] = await Promise.all([
+          fetch(`${API_URL}/medico/${medicoId}`),
+          supabase
+            .from("obras_sociales")
+            .select("*")
+            .eq("medico_id", medicoId)
+            .order("nombre")
+        ])
+
+        if (medicoRes.ok) {
+          setMedicoInfo(await medicoRes.json())
+        }
         
-        const { data } = await supabase
-          .from("obras_sociales")
-          .select("*")
-          .eq("medico_id", medicoId)
-          .order("nombre")
-        if (data) setObrasSociales(data)
+        if (osRes.data) {
+          setObrasSociales(osRes.data)
+        }
       } catch (err) {
         console.error("Error fetching data:", err)
         setError("Error al cargar los datos del médico.")
