@@ -12,7 +12,10 @@ import { QRCodeSVG } from "qrcode.react";
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Agenda");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState<"paciente" | "turno" | "evolucion" | "detalle_turno" | "editar_paciente" | "editar_turno" | "obra_social" | "editar_obra_social" | "bloqueos" | "filtros" | "vista_diaria">("turno");
+  const [modalType, setModalType] = useState<"paciente" | "turno" | "evolucion" | "detalle_turno" | "editar_paciente" | "editar_turno" | "obra_social" | "editar_obra_social" | "bloqueos" | "filtros" | "vista_diaria" | "unificar_pacientes">("turno");
+  const [selectedPacientePrincipal, setSelectedPacientePrincipal] = useState<any>(null);
+  const [pacientesABorrar, setPacientesABorrar] = useState<string[]>([]);
+  const [busquedaUnificar, setBusquedaUnificar] = useState("");
   const [selectedDateForVistaDiaria, setSelectedDateForVistaDiaria] = useState<string | null>(null);
   const [filtroObraSocial, setFiltroObraSocial] = useState<string | null>(null);
   const [selectedTurno, setSelectedTurno] = useState<any>(null);
@@ -539,6 +542,57 @@ export default function Dashboard() {
     }
   };
 
+  const handleUnificarPacientes = async () => {
+    if (!selectedPacientePrincipal) {
+      alert("Por favor selecciona un paciente principal");
+      return;
+    }
+    if (pacientesABorrar.length === 0) {
+      alert("Por favor selecciona al menos un paciente para unificar");
+      return;
+    }
+    if (!confirm(`¿Estás seguro de unificar ${pacientesABorrar.length} paciente(s) en ${selectedPacientePrincipal.nombre} ${selectedPacientePrincipal.apellido}? Esta acción no se puede deshacer.`)) return;
+
+    setLoading(true);
+    try {
+      // 1. Reasignar turnos
+      for (const pacienteId of pacientesABorrar) {
+        await supabase
+          .from("turnos")
+          .update({ paciente_id: selectedPacientePrincipal.id })
+          .eq("paciente_id", pacienteId);
+      }
+
+      // 2. Reasignar evoluciones
+      for (const pacienteId of pacientesABorrar) {
+        await supabase
+          .from("evoluciones")
+          .update({ paciente_id: selectedPacientePrincipal.id })
+          .eq("paciente_id", pacienteId);
+      }
+
+      // 3. Borrar los pacientes
+      for (const pacienteId of pacientesABorrar) {
+        await supabase
+          .from("pacientes")
+          .delete()
+          .eq("id", pacienteId);
+      }
+
+      // 4. Actualizar lista y cerrar modal
+      await fetchPacientes();
+      setIsModalOpen(false);
+      setSelectedPacientePrincipal(null);
+      setPacientesABorrar([]);
+      setBusquedaUnificar("");
+      alert("Unificación completada correctamente");
+    } catch (error: any) {
+      alert("Error al unificar pacientes: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const changeMonth = (offset: number) => {
     const nextDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + offset, 1);
     setCurrentDate(nextDate);
@@ -611,7 +665,7 @@ export default function Dashboard() {
     router.refresh();
   };
 
-  const handleOpenModal = (type: "paciente" | "turno" | "evolucion" | "detalle_turno" | "editar_paciente" | "editar_turno" | "obra_social" | "editar_obra_social" | "bloqueos" | "filtros") => {
+  const handleOpenModal = (type: "paciente" | "turno" | "evolucion" | "detalle_turno" | "editar_paciente" | "editar_turno" | "obra_social" | "editar_obra_social" | "bloqueos" | "filtros" | "unificar_pacientes") => {
     setModalType(type);
     setIsModalOpen(true);
     if (type === "turno") {
@@ -736,13 +790,26 @@ export default function Dashboard() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              <button 
-                onClick={() => handleOpenModal("filtros")}
-                className="flex items-center gap-2 px-5 py-2.5 border border-[#e0e0e0] rounded-full text-[14px] font-medium hover:bg-[#f5f5f7] transition"
-              >
-                <Filter className="w-4 h-4" /> Filtros
-                {filtroObraSocial && <span className="bg-[#0066cc] text-white text-[12px] px-2.5 py-0.5 rounded-full">1</span>}
-              </button>
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => handleOpenModal("filtros")}
+                  className="flex items-center gap-2 px-5 py-2.5 border border-[#e0e0e0] rounded-full text-[14px] font-medium hover:bg-[#f5f5f7] transition"
+                >
+                  <Filter className="w-4 h-4" /> Filtros
+                  {filtroObraSocial && <span className="bg-[#0066cc] text-white text-[12px] px-2.5 py-0.5 rounded-full">1</span>}
+                </button>
+                <button 
+                  onClick={() => {
+                    setSelectedPacientePrincipal(null);
+                    setPacientesABorrar([]);
+                    setBusquedaUnificar("");
+                    handleOpenModal("unificar_pacientes");
+                  }}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-[#0066cc] text-white rounded-full text-[14px] font-medium hover:opacity-90 transition"
+                >
+                  <Users className="w-4 h-4" /> Unificar Pacientes
+                </button>
+              </div>
             </div>
             <div className="bg-white rounded-lg border border-[#e0e0e0] overflow-hidden">
               <table className="w-full text-left">
@@ -1265,10 +1332,110 @@ export default function Dashboard() {
             const date = new Date(year, month - 1, day);
             return date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
           })() :
+          modalType === "unificar_pacientes" ? "Unificar Pacientes" :
           "Nueva Evolución Médica"
         }
       >
-        {modalType === "vista_diaria" ? (
+        {modalType === "unificar_pacientes" ? (
+          <div className="space-y-6">
+            {/* Paciente Principal */}
+            <div className="space-y-4">
+              <h3 className="text-[17px] font-semibold text-[#1d1d1f]">1. Seleccionar Paciente Principal</h3>
+              <p className="text-[14px] text-[#7a7a7a]">
+                Este paciente conservará todos sus datos (DNI, nombre, obra social, etc.)
+              </p>
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7a7a7a]" />
+                <input 
+                  type="text" 
+                  placeholder="Buscar por nombre, apellido o DNI..." 
+                  className="w-full pl-11 pr-4 py-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]"
+                  value={busquedaUnificar}
+                  onChange={(e) => setBusquedaUnificar(e.target.value)}
+                />
+              </div>
+              <div className="max-h-60 overflow-y-auto border border-[#e0e0e0] rounded-lg">
+                {pacientes
+                  .filter(p => 
+                    `${p.nombre} ${p.apellido} ${p.dni}`.toLowerCase().includes(busquedaUnificar.toLowerCase())
+                  )
+                  .map(p => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setSelectedPacientePrincipal(p)}
+                      className={`w-full text-left p-3 text-[14px] hover:bg-[#f5f5f7] transition-colors ${selectedPacientePrincipal?.id === p.id ? 'bg-[#0066cc]/10 border-l-4 border-[#0066cc]' : ''}`}
+                    >
+                      <div className="font-medium text-[#1d1d1f]">
+                        {p.nombre} {p.apellido}
+                      </div>
+                      <div className="text-[12px] text-[#7a7a7a]">
+                        DNI: {p.dni}
+                      </div>
+                    </button>
+                  ))}
+              </div>
+            </div>
+
+            {/* Pacientes a Borrar */}
+            {selectedPacientePrincipal && (
+              <div className="space-y-4 pt-4 border-t border-[#e0e0e0]">
+                <h3 className="text-[17px] font-semibold text-[#1d1d1f]">2. Seleccionar Pacientes a Unificar</h3>
+                <p className="text-[14px] text-[#7a7a7a]">
+                  Los turnos y historias clínicas de estos pacientes se reasignarán al paciente principal, y luego serán eliminados.
+                </p>
+                <div className="max-h-60 overflow-y-auto border border-[#e0e0e0] rounded-lg">
+                  {pacientes
+                    .filter(p => p.id !== selectedPacientePrincipal.id)
+                    .filter(p => 
+                      `${p.nombre} ${p.apellido} ${p.dni}`.toLowerCase().includes(busquedaUnificar.toLowerCase())
+                    )
+                    .map(p => (
+                      <label key={p.id} className="flex items-center gap-3 p-3 hover:bg-[#f5f5f7] transition-colors cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          checked={pacientesABorrar.includes(p.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setPacientesABorrar([...pacientesABorrar, p.id]);
+                            } else {
+                              setPacientesABorrar(pacientesABorrar.filter(id => id !== p.id));
+                            }
+                          }}
+                          className="w-4 h-4 rounded border-[#e0e0e0] text-[#0066cc] focus:ring-[#0066cc]"
+                        />
+                        <div>
+                          <div className="font-medium text-[#1d1d1f]">
+                            {p.nombre} {p.apellido}
+                          </div>
+                          <div className="text-[12px] text-[#7a7a7a]">
+                            DNI: {p.dni}
+                          </div>
+                        </div>
+                      </label>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {/* Botones */}
+            <div className="flex gap-3 pt-4 border-t border-[#e0e0e0]">
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="flex-1 bg-[#f5f5f7] text-[#7a7a7a] py-3 rounded-full font-medium text-[14px] hover:bg-[#e0e0e0] transition-colors"
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={handleUnificarPacientes}
+                disabled={!selectedPacientePrincipal || pacientesABorrar.length === 0 || loading}
+                className="flex-1 bg-[#0066cc] text-white py-3 rounded-full font-medium text-[14px] hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? "Unificando..." : `Unificar ${pacientesABorrar.length} Paciente(s)`}
+              </button>
+            </div>
+          </div>
+        ) : modalType === "vista_diaria" ? (
           <div className="space-y-4">
             {(() => {
               if (!selectedDateForVistaDiaria || !medicoConfig) return null;
