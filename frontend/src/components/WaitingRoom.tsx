@@ -2,6 +2,7 @@
 
 import { Clock, User, CheckCircle2, PlayCircle, LogIn, UserX } from "lucide-react"
 import { createClient } from "@/lib/supabase"
+import { useState, useEffect } from "react"
 
 export type EstadoTurno = "pendiente" | "llegó" | "en_espera" | "en_consultorio" | "finalizado" | "cancelado" | "ausente"
 
@@ -13,16 +14,41 @@ interface WaitingRoomProps {
 
 export default function WaitingRoom({ turnos, onUpdate, onVerHC }: WaitingRoomProps) {
   const supabase = createClient()
+  const [now, setNow] = useState(new Date())
+
+  // Actualizar el tiempo cada segundo para el minutero
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNow(new Date())
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
 
   const cambiarEstado = async (id: string, nuevoEstado: EstadoTurno) => {
+    const updateData: any = { estado: nuevoEstado }
+    
+    // Si se marca "llegó", guardamos la hora actual
+    if (nuevoEstado === "llegó") {
+      updateData.hora_llegada = new Date().toISOString()
+    }
+
     const { error } = await supabase
       .from("turnos")
-      .update({ estado: nuevoEstado })
+      .update(updateData)
       .eq("id", id)
     
     if (!error) {
       onUpdate()
     }
+  }
+
+  // Función para calcular y formatear el tiempo transcurrido
+  const formatearTiempoTranscurrido = (horaLlegada: string) => {
+    const inicio = new Date(horaLlegada)
+    const diff = now.getTime() - inicio.getTime()
+    const minutos = Math.floor(diff / 60000)
+    const segundos = Math.floor((diff % 60000) / 1000)
+    return `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`
   }
 
   // Solo mostrar turnos de hoy que no estén cancelados ni finalizados
@@ -32,7 +58,16 @@ export default function WaitingRoom({ turnos, onUpdate, onVerHC }: WaitingRoomPr
       const fechaTurno = new Date(t.fecha_hora).toLocaleDateString()
       return hoy === fechaTurno && t.estado !== "cancelado" && t.estado !== "finalizado" && t.estado !== "ausente"
     })
-    .sort((a, b) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime())
+    .sort((a, b) => {
+      // Ordenar por tiempo de espera (más largo primero) si tienen hora_llegada
+      if (a.hora_llegada && b.hora_llegada) {
+        return new Date(a.hora_llegada).getTime() - new Date(b.hora_llegada).getTime()
+      }
+      // Si uno no tiene hora_llegada, ordenar por fecha_hora
+      if (a.hora_llegada) return -1
+      if (b.hora_llegada) return 1
+      return new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime()
+    })
 
   return (
     <div className="bg-white rounded-lg border border-[#e0e0e0] overflow-hidden">
@@ -60,7 +95,15 @@ export default function WaitingRoom({ turnos, onUpdate, onVerHC }: WaitingRoomPr
                   <User className={`w-5 h-5 ${t.estado === 'en_consultorio' ? 'text-[#0066cc]' : 'text-[#7a7a7a]'}`} />
                 </div>
                 <div>
-                  <h3 className="text-[17px] font-medium text-[#1d1d1f] tracking-tight leading-none">{t.pacientes?.nombre} {t.pacientes?.apellido}</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-[17px] font-medium text-[#1d1d1f] tracking-tight leading-none">{t.pacientes?.nombre} {t.pacientes?.apellido}</h3>
+                    {/* Minutero: mostrar solo si tiene hora_llegada y estado no es pendiente ni en_consultorio */}
+                    {t.hora_llegada && t.estado !== "pendiente" && t.estado !== "en_consultorio" && (
+                      <span className="text-[12px] font-mono text-[#0066cc] bg-[#0066cc]/10 px-2 py-0.5 rounded-full">
+                        {formatearTiempoTranscurrido(t.hora_llegada)}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-[12px] text-[#7a7a7a] mt-1">
                     {new Date(t.fecha_hora).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} hs • {t.motivo || "Consulta"}
                   </p>
