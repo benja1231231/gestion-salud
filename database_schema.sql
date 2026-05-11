@@ -64,6 +64,7 @@ CREATE TABLE IF NOT EXISTS turnos (
     estado estado_turno DEFAULT 'pendiente',
     motivo TEXT,
     es_sobreturno BOOLEAN DEFAULT FALSE,
+    hora_llegada TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
