@@ -41,9 +41,8 @@ export default function ReportesTab({ medicoId }: ReportesProps) {
         const res = await fetch(`${API_URL}/api/v1/reportes/obras-sociales-mensual?medico_id=${medicoId}`);
         if (!res.ok) throw new Error("Error al cargar estadísticas");
         const stats = await res.json();
-        // El rpc devuelve [{mes: '2024-05', cantidad: 10}, ...]
-        // Invertimos para que el tiempo fluya de izquierda a derecha
-        setData(stats.reverse());
+        // Recibimos [{mes: '2024-05', obra_social: 'OSDE', cantidad: 5}, ...]
+        setData(stats);
       } catch (err) {
         console.error(err);
         setError("No se pudieron cargar los reportes.");
@@ -54,6 +53,13 @@ export default function ReportesTab({ medicoId }: ReportesProps) {
 
     fetchStats();
   }, [medicoId]);
+
+  const formatMonthYear = (mesStr: string) => {
+    const [year, month] = mesStr.split("-");
+    const date = new Date(parseInt(year), parseInt(month) - 1);
+    const nombreMes = date.toLocaleString('es-ES', { month: 'long' });
+    return `${nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1)} ${year}`;
+  };
 
   if (loading) {
     return (
@@ -74,85 +80,81 @@ export default function ReportesTab({ medicoId }: ReportesProps) {
     );
   }
 
+  // Procesar datos para el gráfico (Stacked Bar Chart por Mes)
+  const meses = Array.from(new Set(data.map(d => d.mes))).reverse();
+  const obrasSociales = Array.from(new Set(data.map(d => d.obra_social)));
+
+  const colors = [
+    "#0066cc", "#5e5ce6", "#64d2ff", "#32ade6", "#007aff", 
+    "#5856d6", "#af52de", "#ff2d55", "#ff3b30", "#ff9500"
+  ];
+
   const chartData = {
-    labels: data.map(d => d.mes),
-    datasets: [
-      {
-        label: "Obras Sociales Utilizadas",
-        data: data.map(d => d.cantidad),
-        backgroundColor: "#0066cc",
-        borderRadius: 8,
-        barThickness: 40,
-      },
-    ],
+    labels: meses.map(m => formatMonthYear(m)),
+    datasets: obrasSociales.map((os, index) => ({
+      label: os,
+      data: meses.map(m => {
+        const item = data.find(d => d.mes === m && d.obra_social === os);
+        return item ? item.cantidad : 0;
+      }),
+      backgroundColor: colors[index % colors.length],
+      borderRadius: 4,
+    })),
   };
 
   const options = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
-        display: false,
+        position: 'bottom' as const,
+        labels: {
+          usePointStyle: true,
+          padding: 20,
+          font: { size: 12 }
+        }
       },
       title: {
         display: true,
-        text: "Obras Sociales por Mes",
-        font: {
-          size: 17,
-          weight: 'bold' as const,
-        },
+        text: "Uso de Obras Sociales por Mes",
+        font: { size: 17, weight: 'bold' as const },
         color: "#1d1d1f",
-        padding: { bottom: 30 },
+        padding: { bottom: 20 },
       },
       tooltip: {
         backgroundColor: "#1d1d1f",
         padding: 12,
         titleFont: { size: 14 },
         bodyFont: { size: 14 },
-        displayColors: false,
       }
     },
     scales: {
       y: {
+        stacked: true,
         beginAtZero: true,
-        grid: {
-          display: true,
-          color: "#f5f5f7",
-        },
-        ticks: {
-          stepSize: 1,
-          color: "#7a7a7a",
-        }
+        grid: { color: "#f5f5f7" },
+        ticks: { stepSize: 1, color: "#7a7a7a" }
       },
       x: {
-        grid: {
-          display: false,
-        },
-        ticks: {
-          color: "#7a7a7a",
-        }
+        stacked: true,
+        grid: { display: false },
+        ticks: { color: "#7a7a7a" }
       }
     },
   };
 
   return (
     <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-lg border border-[#e0e0e0]">
-          <p className="text-[12px] font-medium text-[#7a7a7a] uppercase tracking-wider mb-1">Total Mes Actual</p>
-          <h3 className="text-[28px] font-semibold text-[#1d1d1f]">
-            {data.length > 0 ? data[data.length - 1].cantidad : 0}
-          </h3>
-        </div>
-      </div>
-
       <div className="bg-white p-8 rounded-lg border border-[#e0e0e0]">
-        <div className="h-[400px] flex items-center justify-center">
+        <div className="h-[500px]">
           {data.length > 0 ? (
             <Bar data={chartData} options={options} />
           ) : (
-            <div className="text-center space-y-2">
-              <p className="text-[#7a7a7a] text-[14px]">No hay datos suficientes para mostrar el gráfico.</p>
-              <p className="text-[#d2d2d7] text-[12px]">Los datos se actualizan al registrar turnos.</p>
+            <div className="flex items-center justify-center h-full text-center space-y-2">
+              <div>
+                <p className="text-[#7a7a7a] text-[14px]">No hay datos suficientes para mostrar el gráfico.</p>
+                <p className="text-[#d2d2d7] text-[12px]">Los datos se actualizan al registrar turnos.</p>
+              </div>
             </div>
           )}
         </div>
