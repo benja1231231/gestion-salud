@@ -154,3 +154,24 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- Función para estadísticas de Obras Sociales por mes
+CREATE OR REPLACE FUNCTION get_os_stats_by_month(p_medico_id UUID)
+RETURNS TABLE (
+    mes TEXT,
+    cantidad BIGINT
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        to_char(t.fecha_hora, 'YYYY-MM') as mes,
+        count(DISTINCT p.obra_social_id) as cantidad
+    FROM turnos t
+    JOIN pacientes p ON t.paciente_id = p.id
+    WHERE t.medico_id = p_medico_id
+      AND p.obra_social_id IS NOT NULL
+      AND t.estado != 'cancelado'
+    GROUP BY mes
+    ORDER BY mes DESC;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;

@@ -185,8 +185,11 @@ export default function ReservarTurno() {
       <div className="min-h-screen bg-[#f5f5f7] flex items-center justify-center p-6">
         <div className="bg-white p-8 rounded-lg border border-[#e0e0e0] max-w-md w-full text-center space-y-4">
           <AlertCircle className="w-12 h-12 text-[#ff6666] mx-auto" />
-          <h2 className="text-[21px] font-semibold text-[#1d1d1f]">Médico no encontrado</h2>
-          <p className="text-[14px] text-[#7a7a7a]">El link de reserva no es válido. Por favor, verifica el enlace.</p>
+          <h2 className="text-[21px] font-semibold text-[#1d1d1f]">Médico no registrado</h2>
+          <p className="text-[14px] text-[#7a7a7a]">
+            No se encontró un profesional asociado a este código QR o enlace. 
+            No es posible solicitar un turno en este momento.
+          </p>
         </div>
       </div>
     )
@@ -230,7 +233,7 @@ export default function ReservarTurno() {
           {step === 1 && (
             <form onSubmit={handleCheckDni} className="space-y-6">
               <div className="space-y-2">
-                <label className="text-[12px] font-medium text-[#7a7a7a] uppercase tracking-wider">Ingresa tu DNI</label>
+                <label className="text-[12px] font-medium text-[#7a7a7a] uppercase tracking-wider">Ingresa el DNI del paciente</label>
                 <input 
                   type="text" 
                   value={dni}

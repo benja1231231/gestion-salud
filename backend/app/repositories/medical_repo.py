@@ -74,3 +74,14 @@ class MedicalRepository:
             .eq("fecha", fecha)\
             .execute()
         return res.data
+
+    # Reportes
+    async def get_os_stats_by_month(self, medico_id: UUID) -> List[dict]:
+        """
+        Obtiene cantidad de obras sociales utilizadas en turnos por mes.
+        """
+        res = self.client.rpc(
+            'get_os_stats_by_month',
+            {'p_medico_id': str(medico_id)}
+        ).execute()
+        return res.data
