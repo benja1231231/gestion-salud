@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException
-from typing import List
 from uuid import UUID
 from app.services.medical_service import MedicalService
 from app.repositories.medical_repo import MedicalRepository
