@@ -28,18 +28,23 @@ export default function ReservarTurno() {
     const fetchInitialData = async () => {
       setLoadingInitial(true)
       try {
-        const [medicoRes, osRes] = await Promise.all([
-          fetch(`${API_URL}/medico/${medicoId}`),
-          supabase
-            .from("obras_sociales")
-            .select("*")
-            .eq("medico_id", medicoId)
-            .order("nombre")
-        ])
-
+        // 1. Pedir info del médico primero (crítico para mostrar la página)
+        const medicoRes = await fetch(`${API_URL}/medico/${medicoId}`)
+        
         if (medicoRes.ok) {
-          setMedicoInfo(await medicoRes.json())
+          const data = await medicoRes.json()
+          setMedicoInfo(data)
         }
+        
+        // Ya tenemos lo mínimo para mostrar la UI
+        setLoadingInitial(false)
+
+        // 2. Cargar Obras Sociales en segundo plano (no bloquea la vista inicial)
+        const osRes = await supabase
+          .from("obras_sociales")
+          .select("*")
+          .eq("medico_id", medicoId)
+          .order("nombre")
         
         if (osRes.data) {
           setObrasSociales(osRes.data)
@@ -47,7 +52,6 @@ export default function ReservarTurno() {
       } catch (err) {
         console.error("Error fetching data:", err)
         setError("Error al cargar los datos del médico.")
-      } finally {
         setLoadingInitial(false)
       }
     }
