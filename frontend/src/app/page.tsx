@@ -3,9 +3,10 @@
 import { useState, useEffect, useRef } from "react";
 import WaitingRoom from "@/components/WaitingRoom";
 import Modal from "@/components/Modal";
+import ReportesTab from "@/components/Reportes";
 import { createClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
-import { Calendar as CalendarIcon, Users, ClipboardList, Settings, Plus, Search, Filter, History, FileText, Download, LogOut, X, Trash2, Clock } from "lucide-react";
+import { Calendar as CalendarIcon, Users, ClipboardList, Settings, Plus, Search, Filter, History, FileText, Download, LogOut, X, Trash2, Clock, BarChart3 } from "lucide-react";
 
 import { QRCodeSVG } from "qrcode.react";
 
@@ -656,6 +657,7 @@ export default function Dashboard() {
     { icon: CalendarIcon, label: "Agenda" },
     { icon: Users, label: "Pacientes" },
     { icon: ClipboardList, label: "Historias Clínicas" },
+    { icon: BarChart3, label: "Reportes" },
     { icon: Settings, label: "Configuración" },
   ];
 
@@ -1025,6 +1027,8 @@ export default function Dashboard() {
             </div>
           </div>
         );
+      case "Reportes":
+        return <ReportesTab medicoId={medicoId || ""} />;
       case "Configuración":
         return (
           <div className="max-w-2xl mx-auto space-y-8">

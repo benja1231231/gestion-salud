@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1 import agenda, pacientes, historia_clinica, public
+from app.api.v1 import agenda, pacientes, historia_clinica, public, reportes
 
 import os
 
@@ -26,6 +26,7 @@ app.include_router(agenda.router, prefix="/api/v1/agenda", tags=["Agenda"])
 app.include_router(pacientes.router, prefix="/api/v1/pacientes", tags=["Pacientes"])
 app.include_router(historia_clinica.router, prefix="/api/v1/historia-clinica", tags=["Historia Clínica"])
 app.include_router(public.router, prefix="/api/v1/public", tags=["Public"])
+app.include_router(reportes.router, prefix="/api/v1/reportes", tags=["Reportes"])
 
 @app.get("/")
 async def root():
