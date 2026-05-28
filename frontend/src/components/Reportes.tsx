@@ -152,11 +152,15 @@ export default function ReportesTab({ medicoId }: ReportesProps) {
         bodyFont: { size: 13 },
         callbacks: {
           title: (tooltipItems: any) => {
+            if (!tooltipItems || tooltipItems.length === 0) return "";
             return `Día: ${tooltipItems[0].label}`;
           },
           label: (context: any) => {
             return ` ${context.dataset.label}: ${context.parsed.y} atenciones`;
           }
+        },
+        filter: (tooltipItem: any) => {
+          return tooltipItem.parsed.y > 0;
         }
       },
     },
