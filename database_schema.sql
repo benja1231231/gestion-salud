@@ -178,7 +178,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Función para estadísticas de Obras Sociales por día (granular)
+-- Función para estadísticas de Obras Sociales por día (granular con Timezone Argentina)
 CREATE OR REPLACE FUNCTION get_os_stats_daily(p_medico_id UUID, p_mes TEXT)
 RETURNS TABLE (
     dia DATE,
@@ -188,14 +188,14 @@ RETURNS TABLE (
 BEGIN
     RETURN QUERY
     SELECT 
-        (t.fecha_hora AT TIME ZONE 'UTC')::DATE as dia,
+        (t.fecha_hora AT TIME ZONE 'UTC' AT TIME ZONE 'ART')::DATE as dia,
         os.nombre as obra_social,
         count(t.id) as cantidad
     FROM turnos t
     JOIN pacientes p ON t.paciente_id = p.id
     JOIN obras_sociales os ON p.obra_social_id = os.id
     WHERE t.medico_id = p_medico_id
-      AND to_char(t.fecha_hora, 'YYYY-MM') = p_mes
+      AND to_char(t.fecha_hora AT TIME ZONE 'UTC' AT TIME ZONE 'ART', 'YYYY-MM') = p_mes
       AND t.estado != 'cancelado'
     GROUP BY dia, os.nombre
     ORDER BY dia ASC;

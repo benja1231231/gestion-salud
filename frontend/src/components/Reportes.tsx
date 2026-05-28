@@ -109,10 +109,12 @@ export default function ReportesTab({ medicoId }: ReportesProps) {
 
   const dailyChartData = {
     labels: diasDelMes.map(d => {
-      const date = new Date(d);
-      const day = date.getDate();
+      // Usar split para evitar que el constructor de Date aplique TZ local sobre un string YYYY-MM-DD
+      const [year, month, day] = d.split('-').map(Number);
+      const date = new Date(year, month - 1, day);
+      const dayNum = date.getDate();
       const weekday = date.toLocaleDateString('es-ES', { weekday: 'short' });
-      return `${weekday} ${day}`;
+      return `${weekday} ${dayNum}`;
     }),
     datasets: obrasSociales.map((os, index) => ({
       label: os,
