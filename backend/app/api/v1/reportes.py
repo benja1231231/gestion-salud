@@ -17,3 +17,10 @@ async def get_os_mensual(medico_id: UUID, service: MedicalService = Depends(get_
         return await service.get_reporte_os_mensual(medico_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/obras-sociales-diario")
+async def get_os_diario(medico_id: UUID, mes: str, service: MedicalService = Depends(get_service)):
+    try:
+        return await service.get_reporte_os_diario(medico_id, mes)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

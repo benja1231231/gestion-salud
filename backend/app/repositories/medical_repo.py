@@ -85,3 +85,13 @@ class MedicalRepository:
             {'p_medico_id': str(medico_id)}
         ).execute()
         return res.data
+
+    async def get_os_stats_daily(self, medico_id: UUID, mes: str) -> List[dict]:
+        """
+        Obtiene consumo diario de obras sociales para un mes específico.
+        """
+        res = self.client.rpc(
+            'get_os_stats_daily',
+            {'p_medico_id': str(medico_id), 'p_mes': mes}
+        ).execute()
+        return res.data
