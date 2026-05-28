@@ -27,6 +27,9 @@ class MedicalService:
     async def get_reporte_os_mensual(self, medico_id: UUID) -> List[dict]:
         return await self.repository.get_os_stats_by_month(medico_id)
 
+    async def get_reporte_os_diario(self, medico_id: UUID, mes: str) -> List[dict]:
+        return await self.repository.get_os_stats_daily(medico_id, mes)
+
     async def llamar_paciente_whatsapp(self, paciente_id: UUID, medico_nombre: str) -> str:
         """Genera link wa.me para notificar al paciente."""
         paciente = await self.repository.get_paciente_by_id(paciente_id)
