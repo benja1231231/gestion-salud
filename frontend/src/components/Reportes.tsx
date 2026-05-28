@@ -108,31 +108,71 @@ export default function ReportesTab({ medicoId }: ReportesProps) {
   const totalGeneralMes = osSummary.reduce((acc, curr) => acc + curr.total, 0);
 
   const dailyChartData = {
-    labels: diasDelMes.map(d => new Date(d).getDate().toString()),
+    labels: diasDelMes.map(d => {
+      const date = new Date(d);
+      const day = date.getDate();
+      const weekday = date.toLocaleDateString('es-ES', { weekday: 'short' });
+      return `${weekday} ${day}`;
+    }),
     datasets: obrasSociales.map((os, index) => ({
       label: os,
       data: diasDelMes.map(dia => {
         const item = dailyData.find(d => d.dia === dia && d.obra_social === os);
         return item ? item.cantidad : 0;
       }),
-      borderColor: colors[index % colors.length],
-      backgroundColor: colors[index % colors.length] + "20",
-      fill: true,
-      tension: 0.4,
-      pointRadius: 3,
+      backgroundColor: colors[index % colors.length],
+      borderRadius: 4,
+      barPercentage: 0.8,
+      categoryPercentage: 0.9,
     })),
   };
 
-  const lineOptions = {
+  const barOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    interaction: {
+      mode: 'index' as const,
+      intersect: false,
+    },
     plugins: {
-      legend: { position: 'bottom' as const, labels: { usePointStyle: true, font: { size: 11 } } },
-      tooltip: { backgroundColor: "#1d1d1f", padding: 12 },
+      legend: { 
+        position: 'bottom' as const, 
+        labels: { 
+          usePointStyle: true, 
+          font: { size: 11 },
+          padding: 20
+        } 
+      },
+      tooltip: { 
+        backgroundColor: "#1d1d1f", 
+        padding: 12,
+        titleFont: { size: 14, weight: 'bold' as const },
+        bodyFont: { size: 13 },
+        callbacks: {
+          title: (tooltipItems: any) => {
+            return `Día: ${tooltipItems[0].label}`;
+          },
+          label: (context: any) => {
+            return ` ${context.dataset.label}: ${context.parsed.y} atenciones`;
+          }
+        }
+      },
     },
     scales: {
-      y: { beginAtZero: true, grid: { color: "#f5f5f7" }, ticks: { stepSize: 1, color: "#7a7a7a" } },
-      x: { grid: { display: false }, ticks: { color: "#7a7a7a" } }
+      y: { 
+        stacked: true,
+        beginAtZero: true, 
+        grid: { color: "#f5f5f7" }, 
+        ticks: { stepSize: 1, color: "#7a7a7a" } 
+      },
+      x: { 
+        stacked: true,
+        grid: { display: false }, 
+        ticks: { 
+          color: "#7a7a7a",
+          font: { size: 10 }
+        } 
+      }
     },
   };
 
@@ -183,7 +223,7 @@ export default function ReportesTab({ medicoId }: ReportesProps) {
               {loadingDaily ? (
                 <div className="flex items-center justify-center h-full"><Loader2 className="animate-spin text-[#d2d2d7]" /></div>
               ) : dailyData.length > 0 ? (
-                <Line data={dailyChartData} options={lineOptions} />
+                <Bar data={dailyChartData} options={barOptions} />
               ) : (
                 <div className="flex items-center justify-center h-full text-[#7a7a7a] text-[14px]">No hay actividad registrada para este mes.</div>
               )}
