@@ -55,10 +55,15 @@ async def agendar_turno_publico(turno: TurnoCreate, service: AgendaService = Dep
 
 @router.get("/medico/{medico_id}")
 async def get_medico_info(medico_id: UUID, service: MedicalService = Depends(get_medical_service)):
+    # Usar cache o acceso directo si es posible para velocidad máxima
     medico = await service.repository.get_medico_by_id(medico_id)
     if not medico:
         raise HTTPException(status_code=404, detail="Médico no encontrado")
-    return {"nombre": medico["nombre"], "apellido": medico["apellido"]}
+    return {
+        "nombre": medico["nombre"], 
+        "apellido": medico["apellido"],
+        "especialidad": medico.get("especialidad", "General")
+    }
 
 @router.get("/disponibilidad/{medico_id}")
 async def get_disponibilidad(medico_id: UUID, fecha: str, service: AgendaService = Depends(get_agenda_service)):
