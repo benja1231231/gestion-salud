@@ -173,12 +173,12 @@ export default function ReservarTurno() {
     }
   }
 
-  if (loadingInitial) {
+  if (loadingInitial && !medicoInfo) {
     return (
       <div className="min-h-screen bg-[#f5f5f7] flex items-center justify-center p-6">
         <div className="text-center space-y-4">
           <div className="w-12 h-12 border-4 border-[#e0e0e0] border-t-[#0066cc] rounded-full animate-spin mx-auto"></div>
-          <p className="text-[14px] text-[#7a7a7a]">Cargando...</p>
+          <p className="text-[14px] text-[#7a7a7a]">Conectando con el consultorio...</p>
         </div>
       </div>
     )
