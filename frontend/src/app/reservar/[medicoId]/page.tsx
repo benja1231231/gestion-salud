@@ -208,7 +208,10 @@ export default function ReservarTurno() {
           </div>
           <h2 className="text-[21px] font-semibold text-[#1d1d1f] tracking-tight">¡Turno Confirmado!</h2>
           <p className="text-[14px] text-[#7a7a7a]">
-            Tu turno con el/la Dr/Dra {medicoInfo?.apellido} ha sido reservado para el día <strong>{new Date(selectedDate).toLocaleDateString()}</strong> a las <strong>{selectedTime} hs</strong>.
+            Tu turno con el/la Dr/Dra {medicoInfo?.apellido} ha sido reservado para el día <strong>{(() => {
+              const [year, month, day] = selectedDate.split('-').map(Number);
+              return new Date(year, month - 1, day).toLocaleDateString();
+            })()}</strong> a las <strong>{selectedTime} hs</strong>.
           </p>
           <div className="pt-4">
             <p className="text-[12px] text-[#7a7a7a]">Puedes cerrar esta ventana.</p>
