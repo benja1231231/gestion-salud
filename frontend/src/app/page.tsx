@@ -1299,32 +1299,64 @@ export default function Dashboard() {
 
   return (
     <div className="flex min-h-screen bg-[#f5f5f7]">
-      <aside className="w-64 border-r border-[#e0e0e0] bg-white p-6 space-y-8 fixed h-full">
-        <div className="flex items-center gap-2 mb-8">
-          <div className="w-8 h-8 bg-[#0066cc] rounded-lg flex items-center justify-center">
-            <CalendarIcon className="w-5 h-5 text-white" />
+      <aside className="w-64 border-r border-[#e0e0e0] bg-white p-6 flex flex-col fixed h-full">
+        <div className="flex-1 space-y-8">
+          <div className="flex items-center gap-2 mb-8">
+            <div className="w-8 h-8 bg-[#0066cc] rounded-lg flex items-center justify-center">
+              <CalendarIcon className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-[17px] font-semibold tracking-tight text-[#1d1d1f]">GestionSalud</span>
           </div>
-          <span className="text-[17px] font-semibold tracking-tight text-[#1d1d1f]">GestionSalud</span>
+
+          <nav className="space-y-1">
+            {menuItems.map((item) => (
+              <button
+                key={item.label}
+                onClick={() => setActiveTab(item.label)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-full text-[14px] font-medium transition-all ${
+                  activeTab === item.label 
+                    ? "bg-[#0066cc] text-white" 
+                    : "text-[#7a7a7a] hover:bg-[#f5f5f7] hover:text-[#1d1d1f]"
+                }`}
+              >
+                <item.icon className="w-4 h-4" />
+                {item.label}
+              </button>
+            ))}
+          </nav>
         </div>
 
-        <nav className="space-y-1">
-          {menuItems.map((item) => (
-            <button
-              key={item.label}
-              onClick={() => setActiveTab(item.label)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-full text-[14px] font-medium transition-all ${
-                activeTab === item.label 
-                  ? "bg-[#0066cc] text-white" 
-                  : "text-[#7a7a7a] hover:bg-[#f5f5f7] hover:text-[#1d1d1f]"
-              }`}
-            >
-              <item.icon className="w-4 h-4" />
-              {item.label}
-            </button>
-          ))}
-        </nav>
+        <div className="space-y-4 pt-8 border-t border-[#e0e0e0]">
+          <div className={`p-4 rounded-2xl border transition-all ${
+            medicoInfo.plan === "premium" 
+            ? "bg-gradient-to-br from-[#1d1d1f] to-[#434343] border-[#333] shadow-lg" 
+            : "bg-[#f5f5f7] border-[#e0e0e0]"
+          }`}>
+            <div className="flex items-center justify-between mb-2">
+              <p className={`text-[11px] font-bold uppercase tracking-wider ${
+                medicoInfo.plan === "premium" ? "text-[#0066cc]" : "text-[#7a7a7a]"
+              }`}>
+                Plan Actual
+              </p>
+              {medicoInfo.plan === "premium" && (
+                <div className="bg-[#0066cc] text-white text-[9px] px-2 py-0.5 rounded-full font-bold">PRO</div>
+              )}
+            </div>
+            <p className={`text-[17px] font-semibold capitalize ${
+              medicoInfo.plan === "premium" ? "text-white" : "text-[#1d1d1f]"
+            }`}>
+              {medicoInfo.plan || "Freemium"}
+            </p>
+            {medicoInfo.plan === "freemium" && (
+              <button 
+                onClick={handleUpgrade}
+                className="w-full mt-3 bg-[#0066cc] text-white py-2 rounded-full text-[12px] font-bold hover:bg-[#0055aa] transition-colors shadow-sm"
+              >
+                MEJORAR AHORA
+              </button>
+            )}
+          </div>
 
-        <div className="pt-8 border-t border-[#e0e0e0]">
           <button 
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-full text-[14px] font-medium text-[#7a7a7a] hover:bg-[#f5f5f7] hover:text-[#1d1d1f] transition-all"
