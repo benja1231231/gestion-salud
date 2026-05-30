@@ -11,6 +11,21 @@ class MedicalRepository:
 
     # Pacientes
     async def create_paciente(self, data: PacienteCreate) -> dict:
+        # 1. Verificar plan y límites del médico
+        medico = await self.get_medico_by_id(data.medico_creador_id)
+        if not medico:
+            raise ValueError("Médico no encontrado")
+        
+        if medico.get("plan") == "freemium":
+            # Contar pacientes actuales
+            count_res = self.client.table("pacientes")\
+                .select("id", count="exact")\
+                .eq("medico_creador_id", str(data.medico_creador_id))\
+                .execute()
+            
+            if count_res.count is not None and count_res.count >= 50:
+                raise ValueError("Límite de pacientes alcanzado para el plan Freemium (50).")
+
         res = self.client.table("pacientes").insert(data.model_dump(mode="json")).execute()
         return res.data[0]
 
