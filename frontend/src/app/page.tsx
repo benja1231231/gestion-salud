@@ -45,10 +45,24 @@ export default function Dashboard() {
     matricula_especialidad?: string,
     telefono_consultorio?: string,
     direccion_consultorio?: string,
-    firma_url?: string
+    firma_url?: string,
+    plan?: "freemium" | "premium",
+    suscripcion_activa?: boolean
   }>({matricula: "", especialidad: ""});
   const supabase = createClient();
   const router = useRouter();
+
+  // Función para verificar si puede crear un paciente
+  const canCreatePaciente = () => {
+    if (medicoInfo.plan === "premium") return true;
+    return pacientes.length < 50; // Límite freemium
+  };
+
+  const handleUpgrade = async () => {
+    const mensaje = `Hola! Quiero mejorar mi plan a Premium en GestionSalud. Mi ID de médico es: ${medicoId}`;
+    const whatsappUrl = `https://wa.me/5493572612061?text=${encodeURIComponent(mensaje)}`;
+    window.open(whatsappUrl, '_blank');
+  };
 
   useEffect(() => {
     const getMedicoData = async () => {
@@ -72,7 +86,8 @@ export default function Dashboard() {
               nombre: user.user_metadata?.nombre || "Nuevo",
               apellido: user.user_metadata?.apellido || "Médico",
               matricula: user.user_metadata?.matricula || "PENDIENTE",
-              especialidad: user.user_metadata?.especialidad || "General"
+              especialidad: user.user_metadata?.especialidad || "General",
+              plan: "freemium"
             }])
             .select()
             .single();
@@ -88,7 +103,9 @@ export default function Dashboard() {
             matricula_especialidad: medico.matricula_especialidad,
             telefono_consultorio: medico.telefono_consultorio,
             direccion_consultorio: medico.direccion_consultorio,
-            firma_url: medico.firma_url
+            firma_url: medico.firma_url,
+            plan: medico.plan,
+            suscripcion_activa: medico.suscripcion_activa
           });
         }
       }
@@ -802,17 +819,43 @@ export default function Dashboard() {
                 </button>
                 <button 
                   onClick={() => {
+                    if (!canCreatePaciente()) {
+                      alert("Has alcanzado el límite de 50 pacientes del plan Freemium. Mejora a Premium para continuar.");
+                      return;
+                    }
+                    handleOpenModal("paciente");
+                  }}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-[#0066cc] text-white rounded-full text-[14px] font-medium hover:opacity-90 transition"
+                >
+                  <Plus className="w-4 h-4" /> Nuevo Paciente
+                </button>
+                <button 
+                  onClick={() => {
                     setSelectedPacientePrincipal(null);
                     setPacientesABorrar([]);
                     setBusquedaUnificar("");
                     handleOpenModal("unificar_pacientes");
                   }}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-[#0066cc] text-white rounded-full text-[14px] font-medium hover:opacity-90 transition"
+                  className="flex items-center gap-2 px-5 py-2.5 border border-[#e0e0e0] rounded-full text-[14px] font-medium hover:bg-[#f5f5f7] transition"
                 >
-                  <Users className="w-4 h-4" /> Unificar Pacientes
+                  <Users className="w-4 h-4" /> Unificar
                 </button>
               </div>
             </div>
+            {medicoInfo.plan === "freemium" && (
+              <div className="bg-[#0066cc]/5 border border-[#0066cc]/20 p-4 rounded-lg flex justify-between items-center">
+                <div className="text-[14px] text-[#0066cc]">
+                  <span className="font-semibold">Uso del Plan:</span> {pacientes.length} / 50 pacientes registrados.
+                </div>
+                <button 
+                  onClick={handleUpgrade}
+                  disabled={loading}
+                  className="text-[12px] font-bold bg-[#0066cc] text-white px-4 py-1.5 rounded-full hover:bg-[#0055aa] transition-colors disabled:opacity-50"
+                >
+                  {loading ? "CARGANDO..." : "MEJORAR A PREMIUM"}
+                </button>
+              </div>
+            )}
             <div className="bg-white rounded-lg border border-[#e0e0e0] overflow-hidden">
               <table className="w-full text-left">
                 <thead className="bg-[#f5f5f7] text-[#7a7a7a] font-medium border-b border-[#e0e0e0]">

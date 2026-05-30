@@ -59,7 +59,7 @@ class PDFService:
                 from datetime import date
                 birth = datetime.strptime(str(paciente_fecha_nac), '%Y-%m-%d').date()
                 today = date.today()
-                age = today.getFullYear() - birth.getFullYear() - ((today.getMonth(), today.getDate()) < (birth.getMonth(), birth.getDate()))
+                age = today.year - birth.year - ((today.month, today.day) < (birth.month, birth.day))
                 edad_str = f"{age} años"
             except Exception:
                 pass
