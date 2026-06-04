@@ -1020,7 +1020,8 @@ export default function Dashboard() {
                           <span className="text-[12px] font-medium text-[#7a7a7a] uppercase">
                             {new Date(e.created_at).toLocaleString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                           </span>
-                          {creatingRecetaFor === e.id ? (
+                          {/* 
+                            creatingRecetaFor === e.id ? (
                             <div className="flex flex-col gap-2 w-full mt-2 bg-white p-4 rounded-lg border border-[#0066cc]/20">
                               <label className="text-[12px] font-medium text-[#0066cc] uppercase">Contenido de la Receta</label>
                               <textarea
@@ -1076,7 +1077,8 @@ export default function Dashboard() {
                             >
                               <FileText className="w-4 h-4" /> Crear nueva receta
                             </button>
-                          )}
+                          )
+                          */}
                         </div>
                         <div className="bg-[#f5f5f7] p-4 rounded-lg border border-[#e0e0e0]">
                           <p className="text-[17px] text-[#1d1d1f] leading-relaxed">
@@ -1157,6 +1159,7 @@ export default function Dashboard() {
                   <input name="direccion_consultorio" type="text" defaultValue={medicoInfo.direccion_consultorio} className="w-full p-3 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" placeholder="Av. Principal 123, Ciudad" />
                 </div>
 
+                {/* 
                 <div className="space-y-2">
                   <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Firma Digital (Imagen)</label>
                   <div className="flex items-center gap-4 p-4 bg-[#f5f5f7] rounded-lg border border-dashed border-[#e0e0e0]">
@@ -1187,6 +1190,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </div>
+                */}
 
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-2">
