@@ -1115,6 +1115,41 @@ export default function Dashboard() {
           </div>
         );
       case "Reportes":
+        if (medicoInfo.plan === "freemium") {
+          return (
+            <div className="flex flex-col items-center justify-center min-h-[600px] bg-white rounded-lg border border-[#e0e0e0] p-12 text-center">
+              <div className="w-20 h-20 bg-[#0066cc]/10 rounded-full flex items-center justify-center mb-6">
+                <BarChart3 className="w-10 h-10 text-[#0066cc]" />
+              </div>
+              <h2 className="text-[28px] font-bold text-[#1d1d1f] tracking-tight mb-4">
+                Módulo de Reportes Premium
+              </h2>
+              <p className="text-[17px] text-[#7a7a7a] max-w-md mb-8 leading-relaxed">
+                Obtén análisis detallados de tu facturación, tendencias de pacientes y desempeño por obra social con nuestro Plan Premium.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl mb-10">
+                <div className="bg-[#f5f5f7] p-6 rounded-2xl text-left border border-[#e0e0e0]">
+                  <p className="text-[14px] font-bold text-[#0066cc] uppercase mb-2">Facturación</p>
+                  <p className="text-[14px] text-[#1d1d1f]">Cierre mensual automático por obra social y particular.</p>
+                </div>
+                <div className="bg-[#f5f5f7] p-6 rounded-2xl text-left border border-[#e0e0e0]">
+                  <p className="text-[14px] font-bold text-[#0066cc] uppercase mb-2">Tendencias</p>
+                  <p className="text-[14px] text-[#1d1d1f]">Gráficos de evolución diaria y mensual de consultas.</p>
+                </div>
+              </div>
+              <button 
+                onClick={handleUpgrade}
+                disabled={loading}
+                className="bg-[#0066cc] text-white px-8 py-3.5 rounded-full text-[16px] font-semibold hover:bg-[#0055aa] transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
+              >
+                {loading ? "CARGANDO..." : "OBTENER ACCESO PREMIUM"}
+              </button>
+              <p className="mt-4 text-[12px] text-[#7a7a7a]">
+                Pruébalo gratis por 14 días. Sin compromiso.
+              </p>
+            </div>
+          );
+        }
         return <ReportesTab medicoId={medicoId || ""} />;
       case "Configuración":
         return (
