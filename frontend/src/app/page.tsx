@@ -478,29 +478,6 @@ export default function Dashboard() {
     }
   };
 
-  const handleCreateEvolucion = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!selectedPaciente) return;
-
-    const formData = new FormData(e.currentTarget);
-    const medico_id = (await supabase.auth.getUser()).data.user?.id;
-    
-    const newEvolucion = {
-      paciente_id: selectedPaciente.id,
-      medico_id: medico_id,
-      contenido: formData.get("contenido"),
-      adjuntos: []
-    };
-
-    const { error } = await supabase.from("evoluciones").insert([newEvolucion]);
-    if (!error) {
-      setIsModalOpen(false);
-      fetchEvoluciones(selectedPaciente.id);
-    } else {
-      alert("Error al guardar evolución: " + error.message);
-    }
-  };
-
   const handleCreateOS = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -520,6 +497,56 @@ export default function Dashboard() {
     } else {
       alert("Error al crear Obra Social: " + error.message);
     }
+  };
+
+  const handleCreateEvolucion = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!selectedPaciente || !medicoId) return;
+    setLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+    const fileInput = e.currentTarget.querySelector('input[type="file"]') as HTMLInputElement;
+    const files = fileInput?.files;
+    const adjuntosUrls = [];
+
+    // 1. Subir archivos si existen
+    if (files && files.length > 0) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${medicoId}/${Date.now()}_${i}.${fileExt}`;
+        
+        const { data, error: uploadError } = await supabase.storage
+          .from('adjuntos')
+          .upload(fileName, file);
+
+        if (uploadError) {
+          console.error("Error subiendo archivo:", uploadError);
+          continue;
+        }
+
+        const { data: { publicUrl } } = supabase.storage.from('adjuntos').getPublicUrl(fileName);
+        adjuntosUrls.push(publicUrl);
+      }
+    }
+
+    const newEvolucion = {
+      paciente_id: selectedPaciente.id,
+      medico_id: medicoId,
+      contenido: formData.get("contenido") as string,
+      adjuntos: adjuntosUrls,
+      created_at: new Date(formData.get("fecha") as string).toISOString()
+    };
+
+    const { error } = await supabase.from("evoluciones").insert([newEvolucion]);
+
+    if (!error) {
+      setIsModalOpen(false);
+      fetchEvoluciones(selectedPaciente.id);
+    } else {
+      alert("Error al guardar evolución: " + error.message);
+    }
+    setLoading(false);
   };
 
   const handleUpdateOS = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -1055,6 +1082,21 @@ export default function Dashboard() {
                           <p className="text-[17px] text-[#1d1d1f] leading-relaxed">
                             {e.contenido}
                           </p>
+                          {e.adjuntos && e.adjuntos.length > 0 && (
+                            <div className="mt-4 flex flex-wrap gap-2 pt-4 border-t border-[#e0e0e0]">
+                              {e.adjuntos.map((url: string, idx: number) => (
+                                <a 
+                                  key={idx} 
+                                  href={url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-2 px-3 py-1.5 bg-white border border-[#e0e0e0] rounded-full text-[12px] font-medium text-[#0066cc] hover:bg-[#f5f5f7] transition-colors"
+                                >
+                                  <Download className="w-3 h-3" /> Archivo {idx + 1}
+                                </a>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}
