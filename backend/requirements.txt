@@ -9,4 +9,5 @@ passlib[bcrypt]
 python-dotenv
 pandas
 reportlab
+requests
 ruff
