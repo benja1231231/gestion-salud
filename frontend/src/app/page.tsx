@@ -36,6 +36,7 @@ export default function Dashboard() {
   const [recetaContent, setRecetaContent] = useState<string>("");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [loading, setLoading] = useState(false);
+  const [showEvolutionForm, setShowEvolutionForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [medicoId, setMedicoId] = useState<string | null>(null);
   const [medicoConfig, setMedicoConfig] = useState<any>(null);
@@ -541,7 +542,7 @@ export default function Dashboard() {
     const { error } = await supabase.from("evoluciones").insert([newEvolucion]);
 
     if (!error) {
-      setIsModalOpen(false);
+      setShowEvolutionForm(false);
       fetchEvoluciones(selectedPaciente.id);
     } else {
       alert("Error al guardar evolución: " + error.message);
@@ -997,18 +998,54 @@ export default function Dashboard() {
                       </div>
                       <div className="flex gap-4 mt-1 text-[14px] text-[#7a7a7a]">
                         <span className="flex items-center gap-1">Tel: {selectedPaciente.telefono || 'N/A'}</span>
-                        <span className="flex items-center gap-1">Email: {selectedPaciente.email || 'N/A'}</span>
+                        <span className="flex items-center gap-1">Nac: {selectedPaciente.fecha_nacimiento ? new Date(selectedPaciente.fecha_nacimiento).toLocaleDateString('es-ES') : 'N/A'}</span>
                       </div>
                     </div>
                     <div className="flex gap-2">
                       <button className="p-2 border border-[#e0e0e0] rounded-full hover:bg-[#f5f5f7] transition" title="Descargar Historia Completa">
                         <Download className="w-4 h-4 text-[#7a7a7a]" />
                       </button>
-                      <button onClick={() => handleOpenModal("evolucion")} className="bg-[#0066cc] text-white px-5 py-2.5 rounded-full text-[14px] font-medium flex items-center gap-2 hover:opacity-90">
-                        <Plus className="w-4 h-4" /> Nueva Evolución
+                      <button onClick={() => setShowEvolutionForm(!showEvolutionForm)} className="bg-[#0066cc] text-white px-5 py-2.5 rounded-full text-[14px] font-medium flex items-center gap-2 hover:opacity-90">
+                        {showEvolutionForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                        {showEvolutionForm ? 'Cancelar' : 'Nueva Evolución'}
                       </button>
                     </div>
                   </div>
+
+                  {showEvolutionForm && (
+                    <form onSubmit={handleCreateEvolucion} className="bg-[#f5f5f7] p-6 rounded-lg border border-[#0066cc]/20 mb-6 space-y-4">
+                      <div className="space-y-1">
+                        <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Paciente</label>
+                        <p className="text-[17px] font-semibold text-[#1d1d1f]">{selectedPaciente?.nombre} {selectedPaciente?.apellido}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Fecha de Evolución</label>
+                        <input name="fecha" type="date" className="w-full p-2.5 bg-white border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" defaultValue={new Date().toISOString().split('T')[0]} required />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Contenido de la Evolución</label>
+                        <textarea 
+                          name="contenido"
+                          className="w-full p-3 bg-white border-none rounded-lg text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" 
+                          rows={8} 
+                          placeholder="Escribe aquí el desarrollo de la consulta..."
+                          required
+                        ></textarea>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Adjuntos (Opcional)</label>
+                        <input type="file" className="w-full text-[12px] text-[#7a7a7a] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[12px] file:font-medium file:bg-[#0066cc]/10 file:text-[#0066cc] hover:file:bg-[#0066cc]/20" multiple />
+                      </div>
+                      <div className="flex gap-3 pt-2">
+                        <button type="button" onClick={() => setShowEvolutionForm(false)} className="flex-1 py-3 rounded-full font-medium text-[14px] bg-white border border-[#e0e0e0] text-[#7a7a7a] hover:bg-[#e0e0e0] transition-colors">
+                          Cancelar
+                        </button>
+                        <button type="submit" disabled={loading} className="flex-1 bg-[#0066cc] text-white py-3 rounded-full font-medium text-[14px] hover:opacity-90 transition disabled:opacity-50">
+                          {loading ? 'Guardando...' : 'Guardar Evolución'}
+                        </button>
+                      </div>
+                    </form>
+                  )}
 
                   <div className="space-y-8">
                     {evoluciones.length === 0 ? (
