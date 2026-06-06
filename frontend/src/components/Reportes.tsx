@@ -33,11 +33,9 @@ interface ReportesProps {
 }
 
 export default function ReportesTab({ medicoId }: ReportesProps) {
-  const [monthlyData, setMonthlyData] = useState<any[]>([]);
   const [dailyData, setDailyData] = useState<any[]>([]);
-  const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7)); // YYYY-MM
-  const [loading, setLoading] = useState(true);
-  const [loadingDaily, setLoadingDaily] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7));
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -48,29 +46,9 @@ export default function ReportesTab({ medicoId }: ReportesProps) {
   ];
 
   useEffect(() => {
-    const fetchMonthlyStats = async () => {
-      if (!medicoId) return;
-      setLoading(true);
-      try {
-        const res = await fetch(`${API_URL}/api/v1/reportes/obras-sociales-mensual?medico_id=${medicoId}`);
-        if (!res.ok) throw new Error("Error al cargar estadísticas mensuales");
-        const stats = await res.json();
-        setMonthlyData(stats);
-      } catch (err) {
-        console.error(err);
-        setError("No se pudieron cargar los reportes.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMonthlyStats();
-  }, [medicoId]);
-
-  useEffect(() => {
     const fetchDailyStats = async () => {
       if (!medicoId || !selectedMonth) return;
-      setLoadingDaily(true);
+      setLoading(true);
       try {
         const res = await fetch(`${API_URL}/api/v1/reportes/obras-sociales-diario?medico_id=${medicoId}&mes=${selectedMonth}`);
         if (!res.ok) throw new Error("Error al cargar estadísticas diarias");
@@ -78,8 +56,9 @@ export default function ReportesTab({ medicoId }: ReportesProps) {
         setDailyData(stats);
       } catch (err) {
         console.error(err);
+        setError("No se pudieron cargar los reportes.");
       } finally {
-        setLoadingDaily(false);
+        setLoading(false);
       }
     };
 
@@ -93,11 +72,9 @@ export default function ReportesTab({ medicoId }: ReportesProps) {
     return `${nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1)} ${year}`;
   };
 
-  // Procesar datos para la tabla resumen y el gráfico diario
   const obrasSociales = Array.from(new Set(dailyData.map(d => d.obra_social)));
   const diasDelMes = Array.from(new Set(dailyData.map(d => d.dia)));
 
-  // Totales por OS para el mes seleccionado
   const osSummary = obrasSociales.map(os => {
     const total = dailyData
       .filter(d => d.obra_social === os)
@@ -109,7 +86,6 @@ export default function ReportesTab({ medicoId }: ReportesProps) {
 
   const dailyChartData = {
     labels: diasDelMes.map(d => {
-      // Usar split para evitar que el constructor de Date aplique TZ local sobre un string YYYY-MM-DD
       const [year, month, day] = d.split('-').map(Number);
       const date = new Date(year, month - 1, day);
       const dayNum = date.getDate();
@@ -182,18 +158,17 @@ export default function ReportesTab({ medicoId }: ReportesProps) {
     },
   };
 
-  if (loading) {
+  if (error && !loading) {
     return (
       <div className="flex flex-col items-center justify-center h-[400px] bg-white rounded-lg border border-[#e0e0e0]">
-        <Loader2 className="w-8 h-8 text-[#0066cc] animate-spin mb-2" />
-        <p className="text-[14px] text-[#7a7a7a]">Analizando datos...</p>
+        <AlertCircle className="w-8 h-8 text-[#ff3b30] mb-2" />
+        <p className="text-[14px] text-[#7a7a7a]">{error}</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-8">
-      {/* Header con Selector */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-lg border border-[#e0e0e0]">
         <div>
           <h2 className="text-[21px] font-semibold text-[#1d1d1f] tracking-tight">Reporte Operativo</h2>
@@ -206,7 +181,6 @@ export default function ReportesTab({ medicoId }: ReportesProps) {
             onChange={(e) => setSelectedMonth(e.target.value)}
             className="p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] font-medium focus:ring-2 focus:ring-[#0066cc] outline-none"
           >
-            {/* Generar últimos 12 meses */}
             {Array.from({ length: 12 }).map((_, i) => {
               const d = new Date();
               d.setMonth(d.getMonth() - i);
@@ -218,7 +192,6 @@ export default function ReportesTab({ medicoId }: ReportesProps) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Gráfico de Tendencia Diaria */}
         <div className="lg:col-span-8 space-y-6">
           <div className="bg-white p-6 rounded-lg border border-[#e0e0e0]">
             <div className="flex items-center gap-2 mb-6">
@@ -226,8 +199,11 @@ export default function ReportesTab({ medicoId }: ReportesProps) {
               <h3 className="text-[17px] font-semibold text-[#1d1d1f]">Tendencia de Consumo Diario</h3>
             </div>
             <div className="h-[400px]">
-              {loadingDaily ? (
-                <div className="flex items-center justify-center h-full"><Loader2 className="animate-spin text-[#d2d2d7]" /></div>
+              {loading ? (
+                <div className="flex flex-col items-center justify-center h-full gap-2">
+                  <Loader2 className="w-6 h-6 text-[#0066cc] animate-spin" />
+                  <p className="text-[14px] text-[#7a7a7a]">Analizando datos...</p>
+                </div>
               ) : dailyData.length > 0 ? (
                 <Bar data={dailyChartData} options={barOptions} />
               ) : (
@@ -237,7 +213,6 @@ export default function ReportesTab({ medicoId }: ReportesProps) {
           </div>
         </div>
 
-        {/* Tabla Resumen / Cierre Mensual */}
         <div className="lg:col-span-4 space-y-6">
           <div className="bg-white p-6 rounded-lg border border-[#e0e0e0] h-full">
             <div className="flex items-center gap-2 mb-6">
@@ -248,7 +223,7 @@ export default function ReportesTab({ medicoId }: ReportesProps) {
             <div className="space-y-4">
               <div className="bg-[#f5f5f7] p-4 rounded-lg">
                 <p className="text-[12px] font-medium text-[#7a7a7a] uppercase tracking-wider">Total Atenciones</p>
-                <h4 className="text-[28px] font-semibold text-[#1d1d1f]">{totalGeneralMes}</h4>
+                <h4 className="text-[28px] font-semibold text-[#1d1d1f]">{loading ? "..." : totalGeneralMes}</h4>
               </div>
 
               <div className="overflow-hidden rounded-lg border border-[#e0e0e0]">
@@ -266,7 +241,7 @@ export default function ReportesTab({ medicoId }: ReportesProps) {
                         <td className="px-3 py-2.5 text-right font-mono text-[#0066cc]">{os.total}</td>
                       </tr>
                     ))}
-                    {osSummary.length === 0 && (
+                    {osSummary.length === 0 && !loading && (
                       <tr><td colSpan={2} className="px-3 py-8 text-center text-[#7a7a7a]">Sin datos</td></tr>
                     )}
                   </tbody>
