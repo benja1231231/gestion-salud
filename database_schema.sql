@@ -127,7 +127,9 @@ CREATE POLICY "Bloqueos: Ver publico" ON bloqueos_agenda FOR SELECT USING (true)
 
 -- 5. INDEXACIÓN PARA PERFORMANCE
 CREATE INDEX IF NOT EXISTS idx_turnos_medico_fecha ON turnos(medico_id, fecha_hora);
+CREATE INDEX IF NOT EXISTS idx_turnos_medico_estado_fecha ON turnos(medico_id, estado, fecha_hora);
 CREATE INDEX IF NOT EXISTS idx_pacientes_dni ON pacientes(dni);
+CREATE INDEX IF NOT EXISTS idx_pacientes_obra_social ON pacientes(obra_social_id);
 CREATE INDEX IF NOT EXISTS idx_evoluciones_paciente ON evoluciones(paciente_id);
 CREATE INDEX IF NOT EXISTS idx_evoluciones_created_at ON evoluciones(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_obras_sociales_medico ON obras_sociales(medico_id);
@@ -155,7 +157,7 @@ CREATE OR REPLACE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
--- Función para estadísticas de Obras Sociales por mes (desglosado)
+-- Función para estadísticas de Obras Sociales por mes (desglosado, últimos 24 meses)
 CREATE OR REPLACE FUNCTION get_os_stats_by_month(p_medico_id UUID)
 RETURNS TABLE (
     mes TEXT,
@@ -173,19 +175,26 @@ BEGIN
     JOIN obras_sociales os ON p.obra_social_id = os.id
     WHERE t.medico_id = p_medico_id
       AND t.estado != 'cancelado'
+      AND t.fecha_hora >= (NOW() AT TIME ZONE 'ART' - INTERVAL '24 months')::DATE::TIMESTAMP AT TIME ZONE 'ART'
     GROUP BY mes, os.nombre
     ORDER BY mes DESC, cantidad DESC;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Función para estadísticas de Obras Sociales por día (granular con Timezone Argentina)
+-- Función para estadísticas de Obras Sociales por día (rango de fechas, usa índice)
 CREATE OR REPLACE FUNCTION get_os_stats_daily(p_medico_id UUID, p_mes TEXT)
 RETURNS TABLE (
     dia DATE,
     obra_social TEXT,
     cantidad BIGINT
 ) AS $$
+DECLARE
+    v_start TIMESTAMPTZ;
+    v_end TIMESTAMPTZ;
 BEGIN
+    v_start := (p_mes || '-01')::TIMESTAMP AT TIME ZONE 'ART';
+    v_end := ((p_mes || '-01')::DATE + INTERVAL '1 month')::TIMESTAMP AT TIME ZONE 'ART';
+
     RETURN QUERY
     SELECT 
         (t.fecha_hora AT TIME ZONE 'UTC' AT TIME ZONE 'ART')::DATE as dia,
@@ -195,7 +204,8 @@ BEGIN
     JOIN pacientes p ON t.paciente_id = p.id
     JOIN obras_sociales os ON p.obra_social_id = os.id
     WHERE t.medico_id = p_medico_id
-      AND to_char(t.fecha_hora AT TIME ZONE 'UTC' AT TIME ZONE 'ART', 'YYYY-MM') = p_mes
+      AND t.fecha_hora >= v_start
+      AND t.fecha_hora < v_end
       AND t.estado != 'cancelado'
     GROUP BY dia, os.nombre
     ORDER BY dia ASC;
