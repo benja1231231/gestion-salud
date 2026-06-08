@@ -37,6 +37,11 @@ export default function Dashboard() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [loading, setLoading] = useState(false);
   const [showEvolutionForm, setShowEvolutionForm] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+
+  useEffect(() => {
+    if (!isModalOpen && !showEvolutionForm) setSelectedFiles([]);
+  }, [isModalOpen, showEvolutionForm]);
   const [searchQuery, setSearchQuery] = useState("");
   const [medicoId, setMedicoId] = useState<string | null>(null);
   const [medicoConfig, setMedicoConfig] = useState<any>(null);
@@ -506,18 +511,15 @@ export default function Dashboard() {
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
-    const fileInput = e.currentTarget.querySelector('input[type="file"]') as HTMLInputElement;
-    const files = fileInput?.files;
-    const adjuntosUrls = [];
+    const adjuntosUrls: string[] = [];
 
-    // 1. Subir archivos si existen
-    if (files && files.length > 0) {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+    if (selectedFiles.length > 0) {
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
         const fileExt = file.name.split('.').pop();
         const fileName = `${medicoId}/${Date.now()}_${i}.${fileExt}`;
         
-        const { data, error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('adjuntos')
           .upload(fileName, file);
 
@@ -542,6 +544,7 @@ export default function Dashboard() {
     const { error } = await supabase.from("evoluciones").insert([newEvolucion]);
 
     if (!error) {
+      setSelectedFiles([]);
       setShowEvolutionForm(false);
       fetchEvoluciones(selectedPaciente.id);
     } else {
@@ -1034,10 +1037,30 @@ export default function Dashboard() {
                       </div>
                       <div className="space-y-1">
                         <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Adjuntos (Opcional)</label>
-                        <input type="file" className="w-full text-[12px] text-[#7a7a7a] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[12px] file:font-medium file:bg-[#0066cc]/10 file:text-[#0066cc] hover:file:bg-[#0066cc]/20" multiple />
+                        <input
+                          type="file"
+                          className="w-full text-[12px] text-[#7a7a7a] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[12px] file:font-medium file:bg-[#0066cc]/10 file:text-[#0066cc] hover:file:bg-[#0066cc]/20"
+                          multiple
+                          onChange={(e) => {
+                            if (e.target.files) setSelectedFiles(prev => [...prev, ...Array.from(e.target.files!)]);
+                            e.target.value = '';
+                          }}
+                        />
+                        {selectedFiles.length > 0 && (
+                          <div className="flex flex-wrap gap-2 pt-2">
+                            {selectedFiles.map((file, idx) => (
+                              <div key={idx} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#e0e0e0] rounded-full text-[12px]">
+                                <span className="max-w-[150px] truncate">{file.name}</span>
+                                <button type="button" onClick={() => setSelectedFiles(prev => prev.filter((_, i) => i !== idx))} className="text-[#ff3b30] hover:text-[#ff2d55]">
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       <div className="flex gap-3 pt-2">
-                        <button type="button" onClick={() => setShowEvolutionForm(false)} className="flex-1 py-3 rounded-full font-medium text-[14px] bg-white border border-[#e0e0e0] text-[#7a7a7a] hover:bg-[#e0e0e0] transition-colors">
+                        <button type="button" onClick={() => { setShowEvolutionForm(false); setSelectedFiles([]); }} className="flex-1 py-3 rounded-full font-medium text-[14px] bg-white border border-[#e0e0e0] text-[#7a7a7a] hover:bg-[#e0e0e0] transition-colors">
                           Cancelar
                         </button>
                         <button type="submit" disabled={loading} className="flex-1 bg-[#0066cc] text-white py-3 rounded-full font-medium text-[14px] hover:opacity-90 transition disabled:opacity-50">
@@ -1512,7 +1535,7 @@ export default function Dashboard() {
 
       <Modal 
         isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+        onClose={() => { setIsModalOpen(false); setSelectedFiles([]); }} 
         title={
           modalType === "paciente" ? "Registrar Nuevo Paciente" : 
           modalType === "editar_paciente" ? "Editar Paciente" :
@@ -2046,7 +2069,27 @@ export default function Dashboard() {
               </div>
               <div className="space-y-1">
                 <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Adjuntos (Opcional)</label>
-                <input type="file" className="w-full text-[12px] text-[#7a7a7a] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[12px] file:font-medium file:bg-[#0066cc]/10 file:text-[#0066cc] hover:file:bg-[#0066cc]/20" multiple />
+                <input
+                  type="file"
+                  className="w-full text-[12px] text-[#7a7a7a] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[12px] file:font-medium file:bg-[#0066cc]/10 file:text-[#0066cc] hover:file:bg-[#0066cc]/20"
+                  multiple
+                  onChange={(e) => {
+                    if (e.target.files) setSelectedFiles(prev => [...prev, ...Array.from(e.target.files!)]);
+                    e.target.value = '';
+                  }}
+                />
+                {selectedFiles.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    {selectedFiles.map((file, idx) => (
+                      <div key={idx} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#f5f5f7] border border-[#e0e0e0] rounded-full text-[12px]">
+                        <span className="max-w-[150px] truncate">{file.name}</span>
+                        <button type="button" onClick={() => setSelectedFiles(prev => prev.filter((_, i) => i !== idx))} className="text-[#ff3b30] hover:text-[#ff2d55]">
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </>
           )}

@@ -34,3 +34,10 @@ backend/app/static/recetas/*
 
 # Caveman specific (nested git)
 # caveman/.git  <-- This will be handled by git if we don't want it as a submodule
+
+# OpenCode
+opencode.json
+.opencode/
+
+# TypeScript
+frontend/tsconfig.tsbuildinfo
