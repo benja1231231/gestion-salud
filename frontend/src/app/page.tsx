@@ -38,6 +38,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [showEvolutionForm, setShowEvolutionForm] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!isModalOpen && !showEvolutionForm) setSelectedFiles([]);
@@ -1037,26 +1038,26 @@ export default function Dashboard() {
                       </div>
                       <div className="space-y-1">
                         <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Adjuntos (Opcional)</label>
-                        <input
-                          type="file"
-                          className="w-full text-[12px] text-[#7a7a7a] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[12px] file:font-medium file:bg-[#0066cc]/10 file:text-[#0066cc] hover:file:bg-[#0066cc]/20"
-                          multiple
-                          onChange={(e) => {
-                            if (e.target.files) setSelectedFiles(prev => [...prev, ...Array.from(e.target.files!)]);
-                            e.target.value = '';
-                          }}
-                        />
-                        {selectedFiles.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="w-full flex items-center justify-center gap-2 p-2.5 bg-white border border-dashed border-[#0066cc]/30 rounded-lg text-[13px] text-[#0066cc] font-medium hover:bg-[#0066cc]/5 transition-colors"
+                        >
+                          <Plus className="w-4 h-4" /> Agregar archivos
+                        </button>
+                        {selectedFiles.length > 0 ? (
                           <div className="flex flex-wrap gap-2 pt-2">
                             {selectedFiles.map((file, idx) => (
-                              <div key={idx} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#e0e0e0] rounded-full text-[12px]">
-                                <span className="max-w-[150px] truncate">{file.name}</span>
-                                <button type="button" onClick={() => setSelectedFiles(prev => prev.filter((_, i) => i !== idx))} className="text-[#ff3b30] hover:text-[#ff2d55]">
-                                  <X className="w-3 h-3" />
+                              <div key={idx} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0066cc]/5 border border-[#0066cc]/20 rounded-full text-[12px]">
+                                <span className="max-w-[180px] truncate font-medium text-[#1d1d1f]">{file.name}</span>
+                                <button type="button" onClick={() => setSelectedFiles(prev => prev.filter((_, i) => i !== idx))} className="text-[#ff3b30] hover:text-[#ff2d55] ml-1" title="Quitar archivo">
+                                  <X className="w-3.5 h-3.5" />
                                 </button>
                               </div>
                             ))}
                           </div>
+                        ) : (
+                          <p className="text-[11px] text-[#7a7a7a] italic">Sin archivos seleccionados</p>
                         )}
                       </div>
                       <div className="flex gap-3 pt-2">
@@ -1440,6 +1441,18 @@ export default function Dashboard() {
 
   return (
     <div className="flex min-h-screen bg-[#f5f5f7]">
+      <input
+        ref={fileInputRef}
+        type="file"
+        className="hidden"
+        multiple
+        onChange={(e) => {
+          if (e.target.files) {
+            setSelectedFiles(prev => [...prev, ...Array.from(e.target.files!)]);
+          }
+          e.target.value = '';
+        }}
+      />
       <aside className="w-64 border-r border-[#e0e0e0] bg-white p-6 flex flex-col fixed h-full">
         <div className="flex-1 space-y-8">
           <div className="flex items-center gap-2 mb-8">
@@ -2069,26 +2082,26 @@ export default function Dashboard() {
               </div>
               <div className="space-y-1">
                 <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Adjuntos (Opcional)</label>
-                <input
-                  type="file"
-                  className="w-full text-[12px] text-[#7a7a7a] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[12px] file:font-medium file:bg-[#0066cc]/10 file:text-[#0066cc] hover:file:bg-[#0066cc]/20"
-                  multiple
-                  onChange={(e) => {
-                    if (e.target.files) setSelectedFiles(prev => [...prev, ...Array.from(e.target.files!)]);
-                    e.target.value = '';
-                  }}
-                />
-                {selectedFiles.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full flex items-center justify-center gap-2 p-2.5 bg-[#f5f5f7] border border-dashed border-[#0066cc]/30 rounded-lg text-[13px] text-[#0066cc] font-medium hover:bg-[#0066cc]/5 transition-colors"
+                >
+                  <Plus className="w-4 h-4" /> Agregar archivos
+                </button>
+                {selectedFiles.length > 0 ? (
                   <div className="flex flex-wrap gap-2 pt-2">
                     {selectedFiles.map((file, idx) => (
-                      <div key={idx} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#f5f5f7] border border-[#e0e0e0] rounded-full text-[12px]">
-                        <span className="max-w-[150px] truncate">{file.name}</span>
-                        <button type="button" onClick={() => setSelectedFiles(prev => prev.filter((_, i) => i !== idx))} className="text-[#ff3b30] hover:text-[#ff2d55]">
-                          <X className="w-3 h-3" />
+                      <div key={idx} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#0066cc]/20 rounded-full text-[12px]">
+                        <span className="max-w-[180px] truncate font-medium text-[#1d1d1f]">{file.name}</span>
+                        <button type="button" onClick={() => setSelectedFiles(prev => prev.filter((_, i) => i !== idx))} className="text-[#ff3b30] hover:text-[#ff2d55] ml-1" title="Quitar archivo">
+                          <X className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     ))}
                   </div>
+                ) : (
+                  <p className="text-[11px] text-[#7a7a7a] italic">Sin archivos seleccionados</p>
                 )}
               </div>
             </>
