@@ -38,7 +38,6 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [showEvolutionForm, setShowEvolutionForm] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!isModalOpen && !showEvolutionForm) setSelectedFiles([]);
@@ -1038,13 +1037,9 @@ export default function Dashboard() {
                       </div>
                       <div className="space-y-1">
                         <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Adjuntos (Opcional)</label>
-                        <button
-                          type="button"
-                          onClick={() => fileInputRef.current?.click()}
-                          className="w-full flex items-center justify-center gap-2 p-2.5 bg-white border border-dashed border-[#0066cc]/30 rounded-lg text-[13px] text-[#0066cc] font-medium hover:bg-[#0066cc]/5 transition-colors"
-                        >
+                        <label htmlFor="file-upload-input" className="w-full flex items-center justify-center gap-2 p-2.5 bg-white border border-dashed border-[#0066cc]/30 rounded-lg text-[13px] text-[#0066cc] font-medium hover:bg-[#0066cc]/5 transition-colors cursor-pointer">
                           <Plus className="w-4 h-4" /> Agregar archivos
-                        </button>
+                        </label>
                         {selectedFiles.length > 0 ? (
                           <div className="flex flex-wrap gap-2 pt-2">
                             {selectedFiles.map((file, idx) => (
@@ -1442,7 +1437,7 @@ export default function Dashboard() {
   return (
     <div className="flex min-h-screen bg-[#f5f5f7]">
       <input
-        ref={fileInputRef}
+        id="file-upload-input"
         type="file"
         className="hidden"
         multiple
@@ -2082,13 +2077,9 @@ export default function Dashboard() {
               </div>
               <div className="space-y-1">
                 <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Adjuntos (Opcional)</label>
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full flex items-center justify-center gap-2 p-2.5 bg-[#f5f5f7] border border-dashed border-[#0066cc]/30 rounded-lg text-[13px] text-[#0066cc] font-medium hover:bg-[#0066cc]/5 transition-colors"
-                >
+                <label htmlFor="file-upload-input" className="w-full flex items-center justify-center gap-2 p-2.5 bg-[#f5f5f7] border border-dashed border-[#0066cc]/30 rounded-lg text-[13px] text-[#0066cc] font-medium hover:bg-[#0066cc]/5 transition-colors cursor-pointer">
                   <Plus className="w-4 h-4" /> Agregar archivos
-                </button>
+                </label>
                 {selectedFiles.length > 0 ? (
                   <div className="flex flex-wrap gap-2 pt-2">
                     {selectedFiles.map((file, idx) => (
