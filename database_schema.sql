@@ -167,7 +167,7 @@ RETURNS TABLE (
 BEGIN
     RETURN QUERY
     SELECT 
-        to_char(t.fecha_hora, 'YYYY-MM') as mes,
+        to_char(t.fecha_hora AT TIME ZONE 'ART', 'YYYY-MM') as mes,
         os.nombre as obra_social,
         count(t.id) as cantidad
     FROM turnos t
@@ -197,7 +197,7 @@ BEGIN
 
     RETURN QUERY
     SELECT 
-        (t.fecha_hora AT TIME ZONE 'UTC' AT TIME ZONE 'ART')::DATE as dia,
+        (t.fecha_hora AT TIME ZONE 'ART')::DATE as dia,
         os.nombre as obra_social,
         count(t.id) as cantidad
     FROM turnos t
