@@ -30,6 +30,7 @@ export default function Dashboard() {
   const [showPacienteDropdown, setShowPacienteDropdown] = useState(false);
   const [selectedPacienteForTurno, setSelectedPacienteForTurno] = useState<any>(null);
   const pacienteDropdownRef = useRef<HTMLDivElement>(null);
+  
   const [turnos, setTurnos] = useState<any[]>([]);
   const [evoluciones, setEvoluciones] = useState<any[]>([]);
   const [creatingRecetaFor, setCreatingRecetaFor] = useState<string | null>(null);
@@ -38,6 +39,14 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [showEvolutionForm, setShowEvolutionForm] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const files = Array.from(e.target.files);
+      e.target.value = '';
+      setSelectedFiles(prev => [...prev, ...files]);
+    }
+  };
 
   useEffect(() => {
     if (!isModalOpen && !showEvolutionForm) setSelectedFiles([]);
@@ -507,11 +516,15 @@ export default function Dashboard() {
 
   const handleCreateEvolucion = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!selectedPaciente || !medicoId) return;
+    if (!selectedPaciente || !medicoId) {
+      if (!medicoId) alert("No se pudo identificar al médico. Recargá la página.");
+      return;
+    }
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
     const adjuntosUrls: string[] = [];
+    const erroresAdjuntos: string[] = [];
 
     if (selectedFiles.length > 0) {
       for (let i = 0; i < selectedFiles.length; i++) {
@@ -525,6 +538,7 @@ export default function Dashboard() {
 
         if (uploadError) {
           console.error("Error subiendo archivo:", uploadError);
+          erroresAdjuntos.push(`${file.name}: ${uploadError.message}`);
           continue;
         }
 
@@ -547,6 +561,9 @@ export default function Dashboard() {
       setSelectedFiles([]);
       setShowEvolutionForm(false);
       fetchEvoluciones(selectedPaciente.id);
+      if (erroresAdjuntos.length > 0) {
+        alert("Evolución guardada, pero algunos archivos no se pudieron subir:\n" + erroresAdjuntos.join("\n"));
+      }
     } else {
       alert("Error al guardar evolución: " + error.message);
     }
@@ -1036,9 +1053,10 @@ export default function Dashboard() {
                         ></textarea>
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Adjuntos (Opcional)</label>
-                        <label htmlFor="file-upload-input" className="w-full flex items-center justify-center gap-2 p-2.5 bg-white border border-dashed border-[#0066cc]/30 rounded-lg text-[13px] text-[#0066cc] font-medium hover:bg-[#0066cc]/5 transition-colors cursor-pointer">
+                        <span className="text-[12px] font-medium text-[#7a7a7a] uppercase">Adjuntos (Opcional)</span>
+                        <label className="w-full flex items-center justify-center gap-2 p-2.5 bg-white border border-dashed border-[#0066cc]/30 rounded-lg text-[13px] text-[#0066cc] font-medium hover:bg-[#0066cc]/5 transition-colors cursor-pointer">
                           <Plus className="w-4 h-4" /> Agregar archivos
+                          <input type="file" className="sr-only" multiple onChange={handleFileSelect} />
                         </label>
                         {selectedFiles.length > 0 ? (
                           <div className="flex flex-wrap gap-2 pt-2">
@@ -1436,18 +1454,6 @@ export default function Dashboard() {
 
   return (
     <div className="flex min-h-screen bg-[#f5f5f7]">
-      <input
-        id="file-upload-input"
-        type="file"
-        className="hidden"
-        multiple
-        onChange={(e) => {
-          if (e.target.files) {
-            setSelectedFiles(prev => [...prev, ...Array.from(e.target.files!)]);
-          }
-          e.target.value = '';
-        }}
-      />
       <aside className="w-64 border-r border-[#e0e0e0] bg-white p-6 flex flex-col fixed h-full">
         <div className="flex-1 space-y-8">
           <div className="flex items-center gap-2 mb-8">
@@ -2076,9 +2082,10 @@ export default function Dashboard() {
                 ></textarea>
               </div>
               <div className="space-y-1">
-                <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Adjuntos (Opcional)</label>
-                <label htmlFor="file-upload-input" className="w-full flex items-center justify-center gap-2 p-2.5 bg-[#f5f5f7] border border-dashed border-[#0066cc]/30 rounded-lg text-[13px] text-[#0066cc] font-medium hover:bg-[#0066cc]/5 transition-colors cursor-pointer">
+                <span className="text-[12px] font-medium text-[#7a7a7a] uppercase">Adjuntos (Opcional)</span>
+                <label className="w-full flex items-center justify-center gap-2 p-2.5 bg-[#f5f5f7] border border-dashed border-[#0066cc]/30 rounded-lg text-[13px] text-[#0066cc] font-medium hover:bg-[#0066cc]/5 transition-colors cursor-pointer">
                   <Plus className="w-4 h-4" /> Agregar archivos
+                  <input type="file" className="sr-only" multiple onChange={handleFileSelect} />
                 </label>
                 {selectedFiles.length > 0 ? (
                   <div className="flex flex-wrap gap-2 pt-2">
