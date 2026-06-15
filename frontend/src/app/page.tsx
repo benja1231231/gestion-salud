@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { Calendar as CalendarIcon, Users, ClipboardList, Settings, Plus, Search, Filter, History, FileText, Download, LogOut, X, Trash2, Clock, BarChart3 } from "lucide-react";
 
 import { QRCodeSVG } from "qrcode.react";
-import { dateFromArgentinaString, formatArgentinaDate, formatArgentinaDateTime, formatArgentinaTime, getYearMonthArgentina, isSameDayArgentina, nowInArgentina, TIMEZONE_ARGENTINA, toISODateArgentina } from "@/lib/date-utils";
+import { dateFromArgentinaString, formatArgentinaDate, formatArgentinaDateTime, formatArgentinaDay, formatArgentinaTime, formatDateOnly, getYearMonthArgentina, isSameDayArgentina, nowInArgentina, TIMEZONE_ARGENTINA, toISODateArgentina } from "@/lib/date-utils";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Agenda");
@@ -554,7 +554,8 @@ export default function Dashboard() {
       medico_id: medicoId,
       contenido: formData.get("contenido") as string,
       adjuntos: adjuntosUrls,
-      created_at: dateFromArgentinaString(formData.get("fecha") as string, '00:00').toISOString()
+      // Guardar mediodía Argentina (12:00) para evitar desplazamientos de día por timezone
+      created_at: dateFromArgentinaString(formData.get("fecha") as string, '12:00').toISOString()
     };
 
     const { error } = await supabase.from("evoluciones").insert([newEvolucion]);
@@ -1020,7 +1021,7 @@ export default function Dashboard() {
                       </div>
                       <div className="flex gap-4 mt-1 text-[14px] text-[#7a7a7a]">
                         <span className="flex items-center gap-1">Tel: {selectedPaciente.telefono || 'N/A'}</span>
-                        <span className="flex items-center gap-1">Nac: {selectedPaciente.fecha_nacimiento ? formatArgentinaDate(selectedPaciente.fecha_nacimiento) : 'N/A'}</span>
+                        <span className="flex items-center gap-1">Nac: {selectedPaciente.fecha_nacimiento ? formatDateOnly(selectedPaciente.fecha_nacimiento) : 'N/A'}</span>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -1094,7 +1095,7 @@ export default function Dashboard() {
                         <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-white border-2 border-[#0066cc]"></div>
                         <div className="flex justify-between items-center mb-2">
                           <span className="text-[12px] font-medium text-[#7a7a7a] uppercase">
-                            {formatArgentinaDateTime(e.created_at)}
+                            {formatArgentinaDay(e.created_at)}
                           </span>
                           {/* 
                             creatingRecetaFor === e.id ? (
@@ -1128,7 +1129,7 @@ export default function Dashboard() {
                                       const url = window.URL.createObjectURL(blob);
                                       const a = document.createElement('a');
                                       a.href = url;
-                                      a.download = `receta_${selectedPaciente.nombre}_${formatArgentinaDate(e.created_at)}.pdf`;
+                                      a.download = `receta_${selectedPaciente.nombre}_${formatArgentinaDay(e.created_at)}.pdf`;
                                       a.click();
                                       window.URL.revokeObjectURL(url);
                                       setCreatingRecetaFor(null);
