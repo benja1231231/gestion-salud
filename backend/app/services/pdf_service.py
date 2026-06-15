@@ -5,6 +5,7 @@ from reportlab.lib.units import cm
 from datetime import datetime
 import requests
 from reportlab.lib.utils import ImageReader
+from app.core.timezone import now_argentina
 
 class PDFService:
     @staticmethod
@@ -66,7 +67,7 @@ class PDFService:
         
         c.drawString(1*cm, height - 5.5*cm, f"DNI: {paciente_dni} | Edad: {edad_str}")
         c.drawString(1*cm, height - 6.0*cm, f"Obra Social: {paciente_os or 'Particular'} | Afiliado: {paciente_nro_afiliado or '-'}")
-        c.drawString(1*cm, height - 6.5*cm, f"Fecha: {datetime.now().strftime('%d/%m/%Y')}")
+        c.drawString(1*cm, height - 6.5*cm, f"Fecha: {now_argentina().strftime('%d/%m/%Y')}")
 
         c.line(1*cm, height - 6.8*cm, width - 1*cm, height - 6.8*cm)
 

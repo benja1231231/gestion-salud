@@ -21,13 +21,13 @@ DECLARE
     v_start TIMESTAMPTZ;
     v_end TIMESTAMPTZ;
 BEGIN
-    -- Convertir p_mes (YYYY-MM) a rango UTC equivalente a ese mes en zona ART (UTC-3)
-    v_start := (p_mes || '-01')::TIMESTAMP AT TIME ZONE 'ART';
-    v_end := ((p_mes || '-01')::DATE + INTERVAL '1 month')::TIMESTAMP AT TIME ZONE 'ART';
+    -- Convertir p_mes (YYYY-MM) a rango UTC equivalente a ese mes en zona America/Argentina/Buenos_Aires (UTC-3)
+    v_start := (p_mes || '-01')::TIMESTAMP AT TIME ZONE 'America/Argentina/Buenos_Aires';
+    v_end := ((p_mes || '-01')::DATE + INTERVAL '1 month')::TIMESTAMP AT TIME ZONE 'America/Argentina/Buenos_Aires';
 
     RETURN QUERY
     SELECT
-        (t.fecha_hora AT TIME ZONE 'ART')::DATE as dia,
+        (t.fecha_hora AT TIME ZONE 'America/Argentina/Buenos_Aires')::DATE as dia,
         os.nombre as obra_social,
         count(t.id) as cantidad
     FROM turnos t
@@ -53,7 +53,7 @@ RETURNS TABLE (
 BEGIN
     RETURN QUERY
     SELECT
-        to_char(t.fecha_hora AT TIME ZONE 'ART', 'YYYY-MM') as mes,
+        to_char(t.fecha_hora AT TIME ZONE 'America/Argentina/Buenos_Aires', 'YYYY-MM') as mes,
         os.nombre as obra_social,
         count(t.id) as cantidad
     FROM turnos t
@@ -61,7 +61,7 @@ BEGIN
     JOIN obras_sociales os ON p.obra_social_id = os.id
     WHERE t.medico_id = p_medico_id
       AND t.estado != 'cancelado'
-      AND t.fecha_hora >= (NOW() AT TIME ZONE 'ART' - INTERVAL '24 months')::DATE::TIMESTAMP AT TIME ZONE 'ART'
+      AND t.fecha_hora >= (NOW() AT TIME ZONE 'America/Argentina/Buenos_Aires' - INTERVAL '24 months')::DATE::TIMESTAMP AT TIME ZONE 'America/Argentina/Buenos_Aires'
     GROUP BY mes, os.nombre
     ORDER BY mes DESC, cantidad DESC;
 END;

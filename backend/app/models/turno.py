@@ -1,8 +1,9 @@
 from pydantic import BaseModel, Field, field_validator
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import UUID
 from typing import Optional
 from enum import Enum
+from app.core.timezone import TIMEZONE_ARGENTINA
 
 class EstadoTurno(str, Enum):
     PENDIENTE = "pendiente"
@@ -24,7 +25,9 @@ class TurnoCreate(TurnoBase):
     @field_validator("fecha_hora")
     @classmethod
     def fecha_futura(cls, v: datetime) -> datetime:
-        if v < datetime.now().astimezone(v.tzinfo):
+        # Comparar en zona horaria Argentina
+        v_aware = v.replace(tzinfo=TIMEZONE_ARGENTINA) if v.tzinfo is None else v
+        if v_aware < datetime.now(timezone.utc).astimezone(TIMEZONE_ARGENTINA):
             raise ValueError("Fecha debe ser futura")
         return v
 

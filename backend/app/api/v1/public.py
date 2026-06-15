@@ -7,6 +7,7 @@ from app.services.medical_service import MedicalService
 from app.services.agenda_service import AgendaService
 from app.repositories.medical_repo import MedicalRepository
 from app.core.supabase import get_supabase
+from app.core.timezone import TIMEZONE_ARGENTINA
 
 router = APIRouter()
 
@@ -79,19 +80,19 @@ async def get_disponibilidad(medico_id: UUID, fecha: str, service: AgendaService
         "dias_laborales": [1,2,3,4,5]
     })
 
-    # 2. Parsear fecha
+    # 2. Parsear fecha (interpretada como hora Argentina)
     try:
-        fecha_dt = datetime.strptime(fecha, "%Y-%m-%d")
+        fecha_dt = datetime.strptime(fecha, "%Y-%m-%d").replace(tzinfo=TIMEZONE_ARGENTINA)
     except ValueError:
         raise HTTPException(status_code=400, detail="Formato de fecha inválido. Use YYYY-MM-DD")
-    
+
     # 3. Validar si es día laboral
-    # weekday() en Python: 0=Lunes, 6=Domingo. 
+    # weekday() en Python: 0=Lunes, 6=Domingo.
     # En nuestro config (JS): 1=Lunes, 0=Domingo.
     dia_semana_python = fecha_dt.weekday()
     # Mapeo: 0(L)->1, 1(M)->2, ..., 5(S)->6, 6(D)->0
     dia_semana_js = (dia_semana_python + 1) % 7
-    
+
     if dia_semana_js not in config.get("dias_laborales", []):
         return [] # No atiende este día
 
@@ -102,11 +103,11 @@ async def get_disponibilidad(medico_id: UUID, fecha: str, service: AgendaService
         return []
 
     inicio_dia = fecha_dt.replace(hour=0, minute=0, second=0)
-    fin_dia = inicio_dia.replace(hour=23, minute=59, second=59)
-    
+    fin_dia = fecha_dt.replace(hour=23, minute=59, second=59)
+
     turnos = await service.repository.get_by_medico_and_range(medico_id, inicio_dia, fin_dia)
     horas_ocupadas = [t["fecha_hora"] for t in turnos if t["estado"] != "cancelado"]
-    
+
     # 4. Generar slots basados en config
     slots = []
     h_inicio, m_inicio = map(int, config.get("inicio", "08:00").split(":"))
@@ -117,10 +118,10 @@ async def get_disponibilidad(medico_id: UUID, fecha: str, service: AgendaService
     while current.hour < h_fin or (current.hour == h_fin and current.minute < m_fin):
         slot_iso = current.isoformat()
         current_time_str = current.strftime("%H:%M:%S")
-        
+
         # Verificación de solapamiento con turnos
         is_taken = any(slot_iso in h or h in slot_iso for h in horas_ocupadas)
-        
+
         # Verificación de bloqueos parciales
         is_blocked = False
         for b in bloqueos:
@@ -128,8 +129,8 @@ async def get_disponibilidad(medico_id: UUID, fecha: str, service: AgendaService
                 if b["hora_inicio"] <= current_time_str < b["hora_fin"]:
                     is_blocked = True
                     break
-        
+
         slots.append({"hora": current.strftime("%H:%M"), "disponible": not is_taken and not is_blocked})
         current += timedelta(minutes=duracion)
-    
+
     return slots
