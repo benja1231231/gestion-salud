@@ -77,6 +77,28 @@ export function isSameDayArgentina(a: Date | string, b: Date | string): boolean 
 }
 
 /**
+ * Formatea una fecha DATE de Postgres (string 'YYYY-MM-DD') sin aplicar timezone.
+ * Útil para campos como fecha_nacimiento donde solo importa el día exacto.
+ */
+export function formatDateOnly(dateStr: string): string {
+  if (!dateStr) return '';
+  const [year, month, day] = dateStr.split('-');
+  return `${day}/${month}/${year}`;
+}
+
+/**
+ * Formatea un timestamp como fecha (día/mes/año) en zona horaria Argentina.
+ * Útil para evoluciones/turnos donde se seleccionó un día y no una hora exacta.
+ */
+export function formatArgentinaDay(date: Date | string): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return new Intl.DateTimeFormat('es-AR', {
+    timeZone: TIMEZONE_ARGENTINA,
+    day: '2-digit', month: '2-digit', year: 'numeric',
+  }).format(d);
+}
+
+/**
  * Devuelve el año-mes actual en Argentina (YYYY-MM).
  */
 export function getYearMonthArgentina(date: Date): string {
