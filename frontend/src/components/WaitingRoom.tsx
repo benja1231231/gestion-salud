@@ -3,6 +3,7 @@
 import { Clock, User, CheckCircle2, PlayCircle, LogIn, UserX } from "lucide-react"
 import { createClient } from "@/lib/supabase"
 import { useState, useEffect } from "react"
+import { formatArgentinaDate, formatArgentinaTime, isSameDayArgentina, nowInArgentina } from "@/lib/date-utils"
 
 export type EstadoTurno = "pendiente" | "llegó" | "en_espera" | "en_consultorio" | "finalizado" | "cancelado" | "ausente"
 
@@ -14,12 +15,12 @@ interface WaitingRoomProps {
 
 export default function WaitingRoom({ turnos, onUpdate, onVerHC }: WaitingRoomProps) {
   const supabase = createClient()
-  const [now, setNow] = useState(new Date())
+  const [now, setNow] = useState(nowInArgentina())
 
   // Actualizar el tiempo cada segundo para el minutero
   useEffect(() => {
     const timer = setInterval(() => {
-      setNow(new Date())
+      setNow(nowInArgentina())
     }, 1000)
     return () => clearInterval(timer)
   }, [])
@@ -29,7 +30,7 @@ export default function WaitingRoom({ turnos, onUpdate, onVerHC }: WaitingRoomPr
     
     // Si se marca "llegó", guardamos la hora actual
     if (nuevoEstado === "llegó") {
-      updateData.hora_llegada = new Date().toISOString()
+      updateData.hora_llegada = nowInArgentina().toISOString()
     }
 
     const { error } = await supabase
@@ -54,9 +55,7 @@ export default function WaitingRoom({ turnos, onUpdate, onVerHC }: WaitingRoomPr
   // Solo mostrar turnos de hoy que no estén cancelados ni finalizados
   const turnosActivos = turnos
     .filter(t => {
-      const hoy = new Date().toLocaleDateString()
-      const fechaTurno = new Date(t.fecha_hora).toLocaleDateString()
-      return hoy === fechaTurno && t.estado !== "cancelado" && t.estado !== "finalizado" && t.estado !== "ausente"
+      return isSameDayArgentina(new Date(), t.fecha_hora) && t.estado !== "cancelado" && t.estado !== "finalizado" && t.estado !== "ausente"
     })
     .sort((a, b) => {
       // Ordenar por tiempo de espera (más largo primero) si tienen hora_llegada
@@ -105,7 +104,7 @@ export default function WaitingRoom({ turnos, onUpdate, onVerHC }: WaitingRoomPr
                     )}
                   </div>
                   <p className="text-[12px] text-[#7a7a7a] mt-1">
-                    {new Date(t.fecha_hora).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} hs • {t.motivo || "Consulta"}
+                    {formatArgentinaTime(t.fecha_hora)} hs • {t.motivo || "Consulta"}
                   </p>
                 </div>
               </div>

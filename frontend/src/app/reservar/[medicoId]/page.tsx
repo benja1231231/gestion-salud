@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Calendar as CalendarIcon, Clock, User, CheckCircle2, AlertCircle, ArrowLeft } from "lucide-react"
 import { createClient } from "@/lib/supabase"
+import { dateFromArgentinaString, formatArgentinaDate, nowInArgentina, TIMEZONE_ARGENTINA } from "@/lib/date-utils"
 
 export default function ReservarTurno() {
   const { medicoId } = useParams()
@@ -144,7 +145,7 @@ export default function ReservarTurno() {
     setLoading(true)
     setError("")
 
-    const fechaHora = new Date(`${selectedDate}T${selectedTime}`).toISOString()
+    const fechaHora = dateFromArgentinaString(selectedDate, selectedTime).toISOString()
     const newTurno = {
       medico_id: medicoId,
       paciente_id: paciente.id,
@@ -209,8 +210,7 @@ export default function ReservarTurno() {
           <h2 className="text-[21px] font-semibold text-[#1d1d1f] tracking-tight">¡Turno Confirmado!</h2>
           <p className="text-[14px] text-[#7a7a7a]">
             Tu turno con el/la Dr/Dra {medicoInfo?.apellido} ha sido reservado para el día <strong>{(() => {
-              const [year, month, day] = selectedDate.split('-').map(Number);
-              return new Date(year, month - 1, day).toLocaleDateString();
+              return formatArgentinaDate(dateFromArgentinaString(selectedDate));
             })()}</strong> a las <strong>{selectedTime} hs</strong>.
           </p>
           <div className="pt-4">
@@ -334,7 +334,7 @@ export default function ReservarTurno() {
                   </label>
                   <input 
                     type="date" 
-                    min={new Date(Date.now() + 86400000).toISOString().split('T')[0]} // No hoy
+                    min={new Date(nowInArgentina().getTime() + 86400000).toISOString().split('T')[0]} // No hoy
                     className="w-full p-4 bg-[#f5f5f7] border-none rounded-full outline-none focus:ring-2 focus:ring-[#0066cc] text-[14px]"
                     onChange={(e) => setSelectedDate(e.target.value)}
                   />

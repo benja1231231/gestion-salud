@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Bar, Line } from "react-chartjs-2";
+import { getYearMonthArgentina, nowInArgentina, TIMEZONE_ARGENTINA } from "@/lib/date-utils";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -34,7 +35,7 @@ interface ReportesProps {
 
 export default function ReportesTab({ medicoId }: ReportesProps) {
   const [dailyData, setDailyData] = useState<any[]>([]);
-  const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7));
+  const [selectedMonth, setSelectedMonth] = useState<string>(getYearMonthArgentina(nowInArgentina()));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -68,7 +69,7 @@ export default function ReportesTab({ medicoId }: ReportesProps) {
   const formatMonthYear = (mesStr: string) => {
     const [year, month] = mesStr.split("-");
     const date = new Date(parseInt(year), parseInt(month) - 1);
-    const nombreMes = date.toLocaleString('es-ES', { month: 'long' });
+    const nombreMes = date.toLocaleString('es-AR', { timeZone: TIMEZONE_ARGENTINA, month: 'long' });
     return `${nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1)} ${year}`;
   };
 
@@ -87,9 +88,9 @@ export default function ReportesTab({ medicoId }: ReportesProps) {
   const dailyChartData = {
     labels: diasDelMes.map(d => {
       const [year, month, day] = d.split('-').map(Number);
-      const date = new Date(year, month - 1, day);
-      const dayNum = date.getDate();
-      const weekday = date.toLocaleDateString('es-ES', { weekday: 'short' });
+      const date = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+      const dayNum = date.getUTCDate();
+      const weekday = date.toLocaleDateString('es-AR', { timeZone: TIMEZONE_ARGENTINA, weekday: 'short' });
       return `${weekday} ${dayNum}`;
     }),
     datasets: obrasSociales.map((os, index) => ({
@@ -182,9 +183,9 @@ export default function ReportesTab({ medicoId }: ReportesProps) {
             className="p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] font-medium focus:ring-2 focus:ring-[#0066cc] outline-none"
           >
             {Array.from({ length: 12 }).map((_, i) => {
-              const d = new Date();
+              const d = nowInArgentina();
               d.setMonth(d.getMonth() - i);
-              const val = d.toISOString().slice(0, 7);
+              const val = getYearMonthArgentina(d);
               return <option key={val} value={val}>{formatMonthYear(val)}</option>;
             })}
           </select>

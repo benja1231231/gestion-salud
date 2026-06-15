@@ -1,5 +1,6 @@
 from datetime import timedelta, datetime
 from app.models.turno import TurnoCreate, Turno
+from app.core.timezone import TIMEZONE_ARGENTINA
 from uuid import UUID
 
 class AgendaService:
@@ -10,8 +11,11 @@ class AgendaService:
         """
         Crea un turno validando solapamientos y reglas de sobreturnos.
         """
-        # 1. Buscar turnos existentes para el médico en ese día
-        inicio_dia = turno_data.fecha_hora.replace(hour=0, minute=0, second=0)
+        # 1. Buscar turnos existentes para el médico en ese día (zona Argentina)
+        fecha_hora_arg = turno_data.fecha_hora
+        if fecha_hora_arg.tzinfo is None:
+            fecha_hora_arg = fecha_hora_arg.replace(tzinfo=TIMEZONE_ARGENTINA)
+        inicio_dia = fecha_hora_arg.replace(hour=0, minute=0, second=0, microsecond=0)
         fin_dia = inicio_dia + timedelta(days=1)
         
         turnos_existentes = await self.repository.get_by_medico_and_range(
@@ -44,5 +48,7 @@ class AgendaService:
         """
         Chequeo rápido de huecos libres.
         """
-        turnos = await self.repository.get_by_medico_and_range(medico_id, inicio, fin)
+        inicio_arg = inicio if inicio.tzinfo else inicio.replace(tzinfo=TIMEZONE_ARGENTINA)
+        fin_arg = fin if fin.tzinfo else fin.replace(tzinfo=TIMEZONE_ARGENTINA)
+        turnos = await self.repository.get_by_medico_and_range(medico_id, inicio_arg, fin_arg)
         return len([t for t in turnos if t.estado != "cancelado"]) == 0

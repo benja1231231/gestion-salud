@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { Calendar as CalendarIcon, Users, ClipboardList, Settings, Plus, Search, Filter, History, FileText, Download, LogOut, X, Trash2, Clock, BarChart3 } from "lucide-react";
 
 import { QRCodeSVG } from "qrcode.react";
+import { dateFromArgentinaString, formatArgentinaDate, formatArgentinaDateTime, formatArgentinaTime, getYearMonthArgentina, isSameDayArgentina, nowInArgentina, TIMEZONE_ARGENTINA, toISODateArgentina } from "@/lib/date-utils";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Agenda");
@@ -238,8 +239,9 @@ export default function Dashboard() {
   const fetchTurnos = async () => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
-    const startOfMonth = new Date(year, month, 1).toISOString();
-    const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999).toISOString();
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    const startOfMonth = dateFromArgentinaString(`${year}-${String(month + 1).padStart(2, '0')}-01`, '00:00').toISOString();
+    const endOfMonth = dateFromArgentinaString(`${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`, '23:59:59').toISOString();
 
     const { data, error } = await supabase
       .from("turnos")
@@ -350,7 +352,7 @@ export default function Dashboard() {
     const formData = new FormData(e.currentTarget);
     const fecha = formData.get("fecha") as string;
     const hora = formData.get("hora") as string;
-    const fecha_hora = new Date(`${fecha}T${hora}`).toISOString();
+    const fecha_hora = dateFromArgentinaString(fecha, hora).toISOString();
     const medico_id = (await supabase.auth.getUser()).data.user?.id;
 
     const newTurno = {
@@ -470,7 +472,7 @@ export default function Dashboard() {
     const formData = new FormData(e.currentTarget);
     const fecha = formData.get("fecha") as string;
     const hora = formData.get("hora") as string;
-    const fecha_hora = new Date(`${fecha}T${hora}`).toISOString();
+    const fecha_hora = dateFromArgentinaString(fecha, hora).toISOString();
 
     const updatedTurno = {
       paciente_id: selectedPacienteForTurno.id,
@@ -552,7 +554,7 @@ export default function Dashboard() {
       medico_id: medicoId,
       contenido: formData.get("contenido") as string,
       adjuntos: adjuntosUrls,
-      created_at: new Date(formData.get("fecha") as string).toISOString()
+      created_at: dateFromArgentinaString(formData.get("fecha") as string, '00:00').toISOString()
     };
 
     const { error } = await supabase.from("evoluciones").insert([newEvolucion]);
@@ -690,13 +692,13 @@ export default function Dashboard() {
     const duracion = medicoConfig.duracion_turno;
 
     const hours = [];
-    let current = new Date();
+    const current = nowInArgentina();
     current.setHours(h_inicio, m_inicio, 0, 0);
-    const end = new Date();
+    const end = nowInArgentina();
     end.setHours(h_fin, m_fin, 0, 0);
 
     while (current <= end) {
-      hours.push(current.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }));
+      hours.push(current.toLocaleTimeString('es-AR', { timeZone: TIMEZONE_ARGENTINA, hour: '2-digit', minute: '2-digit', hour12: false }));
       current.setMinutes(current.getMinutes() + duracion);
     }
     return hours;
@@ -765,9 +767,9 @@ export default function Dashboard() {
               <div className="bg-white p-6 rounded-lg border border-[#e0e0e0] min-h-[600px] flex flex-col">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-4">
-                    <h2 className="text-[21px] font-semibold text-[#1d1d1f] tracking-tight capitalize">
-                      {currentDate.toLocaleString('es-ES', { month: 'long', year: 'numeric' })}
-                    </h2>
+              <h2 className="text-[21px] font-semibold text-[#1d1d1f] tracking-tight capitalize">
+                {currentDate.toLocaleString('es-AR', { timeZone: TIMEZONE_ARGENTINA, month: 'long', year: 'numeric' })}
+              </h2>
                     <div className="flex border border-[#e0e0e0] rounded-full overflow-hidden">
                       <button onClick={() => changeMonth(-1)} className="px-4 py-2 text-[14px] font-medium bg-white border-r border-[#e0e0e0] hover:bg-[#f5f5f7] transition-colors">&lt;</button>
                       <button onClick={() => setCurrentDate(new Date())} className="px-4 py-2 text-[14px] font-medium bg-white hover:bg-[#f5f5f7] transition-colors">Hoy</button>
@@ -783,7 +785,7 @@ export default function Dashboard() {
                   {calendarDays.map((day, i) => {
                     const dayTurnos = day ? turnos.filter(t => {
                       const tDate = new Date(t.fecha_hora);
-                      return tDate.getDate() === day && tDate.getMonth() === month && tDate.getFullYear() === year;
+                      return isSameDayArgentina(tDate, new Date(Date.UTC(year, month, day, 12, 0, 0)));
                     }) : [];
                     
                     const dateStr = day ? `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : null;
@@ -811,7 +813,7 @@ export default function Dashboard() {
                           <>
                             <div className="flex justify-between items-start">
                               <span className={`text-[14px] font-medium transition-colors ${
-                                day === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear()
+                                day === nowInArgentina().getDate() && month === nowInArgentina().getMonth() && year === nowInArgentina().getFullYear()
                                 ? 'text-white bg-[#0066cc] w-6 h-6 flex items-center justify-center rounded-full' 
                                 : 'text-[#7a7a7a] group-hover:text-[#1d1d1f]'
                               }`}>
@@ -1018,7 +1020,7 @@ export default function Dashboard() {
                       </div>
                       <div className="flex gap-4 mt-1 text-[14px] text-[#7a7a7a]">
                         <span className="flex items-center gap-1">Tel: {selectedPaciente.telefono || 'N/A'}</span>
-                        <span className="flex items-center gap-1">Nac: {selectedPaciente.fecha_nacimiento ? new Date(selectedPaciente.fecha_nacimiento).toLocaleDateString('es-ES') : 'N/A'}</span>
+                        <span className="flex items-center gap-1">Nac: {selectedPaciente.fecha_nacimiento ? formatArgentinaDate(selectedPaciente.fecha_nacimiento) : 'N/A'}</span>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -1040,7 +1042,7 @@ export default function Dashboard() {
                       </div>
                       <div className="space-y-1">
                         <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Fecha de Evolución</label>
-                        <input name="fecha" type="date" className="w-full p-2.5 bg-white border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" defaultValue={new Date().toISOString().split('T')[0]} required />
+                        <input name="fecha" type="date" className="w-full p-2.5 bg-white border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" defaultValue={toISODateArgentina()} required />
                       </div>
                       <div className="space-y-1">
                         <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Contenido de la Evolución</label>
@@ -1092,7 +1094,7 @@ export default function Dashboard() {
                         <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-white border-2 border-[#0066cc]"></div>
                         <div className="flex justify-between items-center mb-2">
                           <span className="text-[12px] font-medium text-[#7a7a7a] uppercase">
-                            {new Date(e.created_at).toLocaleString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                            {formatArgentinaDateTime(e.created_at)}
                           </span>
                           {/* 
                             creatingRecetaFor === e.id ? (
@@ -1126,7 +1128,7 @@ export default function Dashboard() {
                                       const url = window.URL.createObjectURL(blob);
                                       const a = document.createElement('a');
                                       a.href = url;
-                                      a.download = `receta_${selectedPaciente.nombre}_${new Date(e.created_at).toLocaleDateString()}.pdf`;
+                                      a.download = `receta_${selectedPaciente.nombre}_${formatArgentinaDate(e.created_at)}.pdf`;
                                       a.click();
                                       window.URL.revokeObjectURL(url);
                                       setCreatingRecetaFor(null);
@@ -1564,7 +1566,7 @@ export default function Dashboard() {
             if (!selectedDateForVistaDiaria) return "Agenda del Día";
             const [year, month, day] = selectedDateForVistaDiaria.split('-').map(Number);
             const date = new Date(year, month - 1, day);
-            return date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            return date.toLocaleDateString('es-AR', { timeZone: TIMEZONE_ARGENTINA, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
           })() :
           modalType === "unificar_pacientes" ? "Unificar Pacientes" :
           "Nueva Evolución Médica"
@@ -1676,30 +1678,28 @@ export default function Dashboard() {
               
               const [year, month, day] = selectedDateForVistaDiaria.split('-').map(Number);
               const date = new Date(year, month - 1, day);
-              const isToday = date.toDateString() === new Date().toDateString();
+              const isToday = isSameDayArgentina(date, nowInArgentina());
               
-              // Generar todos los slots horarios
+              // Generar todos los slots horarios en UTC (Argentina UTC-3)
               const [h_inicio, m_inicio] = medicoConfig.inicio.split(':').map(Number);
               const [h_fin, m_fin] = medicoConfig.fin.split(':').map(Number);
               const duracion = medicoConfig.duracion_turno;
-              
+
               const slots = [];
-              let current = new Date(date);
-              current.setHours(h_inicio, m_inicio, 0, 0);
-              const end = new Date(date);
-              end.setHours(h_fin, m_fin, 0, 0);
-              
+              let current = new Date(Date.UTC(year, month - 1, day, h_inicio + 3, m_inicio, 0));
+              const end = new Date(Date.UTC(year, month - 1, day, h_fin + 3, m_fin, 0));
+
               while (current < end) {
                 const slotStart = new Date(current);
                 current.setMinutes(current.getMinutes() + duracion);
                 const slotEnd = new Date(current);
                 slots.push({ start: slotStart, end: slotEnd });
               }
-              
+
               // Obtener turnos y bloqueos para este día
               const dayTurnos = turnos.filter(t => {
                 const tDate = new Date(t.fecha_hora);
-                return tDate.getFullYear() === year && tDate.getMonth() === month - 1 && tDate.getDate() === day && t.estado !== 'cancelado';
+                return isSameDayArgentina(tDate, new Date(Date.UTC(year, month - 1, day, 12, 0, 0))) && t.estado !== 'cancelado';
               });
               
               const dayBloqueos = bloqueos.filter(b => b.fecha === selectedDateForVistaDiaria);
@@ -1709,7 +1709,7 @@ export default function Dashboard() {
                 <>
                   <div className="border-b border-[#e0e0e0] pb-4">
                     <h2 className="text-[21px] font-semibold text-[#1d1d1f] tracking-tight">
-                      {date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                      {date.toLocaleDateString('es-AR', { timeZone: TIMEZONE_ARGENTINA, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                       {isToday && <span className="ml-2 text-[12px] bg-[#0066cc]/10 text-[#0066cc] px-2 py-0.5 rounded-full font-medium">HOY</span>}
                     </h2>
                     {isFeriado && <p className="text-[14px] text-[#7a7a7a] mt-1">Día Feriado (Cerrado)</p>}
@@ -1717,9 +1717,6 @@ export default function Dashboard() {
                   
                   <div className="space-y-2 max-h-[600px] overflow-y-auto">
                     {slots.map((slot, idx) => {
-                      const slotStartStr = slot.start.toISOString();
-                      const slotEndStr = slot.end.toISOString();
-                      
                       // Buscar turno que cae en este slot
                       const turno = dayTurnos.find(t => {
                         const tDate = new Date(t.fecha_hora);
@@ -1731,13 +1728,8 @@ export default function Dashboard() {
                         if (b.tipo === 'feriado') return true;
                         if (!b.hora_inicio || !b.hora_fin) return false;
                         
-                        const bloqueoStart = new Date(date);
-                        const [bh, bm] = b.hora_inicio.split(':').map(Number);
-                        bloqueoStart.setHours(bh, bm, 0, 0);
-                        
-                        const bloqueoEnd = new Date(date);
-                        const [beh, bem] = b.hora_fin.split(':').map(Number);
-                        bloqueoEnd.setHours(beh, bem, 0, 0);
+                        const bloqueoStart = dateFromArgentinaString(selectedDateForVistaDiaria, b.hora_inicio.slice(0, 5));
+                        const bloqueoEnd = dateFromArgentinaString(selectedDateForVistaDiaria, b.hora_fin.slice(0, 5));
                         
                         return slot.start < bloqueoEnd && slot.end > bloqueoStart;
                       });
@@ -1748,7 +1740,7 @@ export default function Dashboard() {
                         <div key={idx} className="border-t border-[#e0e0e0]">
                           <div className="flex items-center">
                             <div className="w-20 text-[12px] text-[#7a7a7a] font-medium">
-                              {slot.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              {formatArgentinaTime(slot.start)}
                             </div>
                             <div className="flex-1">
                               {isBloqueado ? (
@@ -1767,7 +1759,7 @@ export default function Dashboard() {
                                   }}
                                 >
                                   <div className="text-[12px] text-[#7a7a7a] mb-1">
-                                    {slot.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {slot.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    {formatArgentinaTime(slot.start)} - {formatArgentinaTime(slot.end)}
                                   </div>
                                   <p className="text-[14px] text-[#1d1d1f] font-medium">
                                     {turno.pacientes?.apellido?.toUpperCase()} {turno.pacientes?.nombre}
@@ -1903,11 +1895,11 @@ export default function Dashboard() {
             <div className="grid grid-cols-2 gap-4">
               <div className="p-3 bg-[#f5f5f7] rounded-lg border border-[#e0e0e0]">
                 <p className="text-[10px] text-[#7a7a7a] font-medium uppercase mb-1">Fecha</p>
-                <p className="text-[14px] text-[#1d1d1f]">{selectedTurno && new Date(selectedTurno.fecha_hora).toLocaleDateString()}</p>
+                <p className="text-[14px] text-[#1d1d1f]">{selectedTurno && formatArgentinaDate(selectedTurno.fecha_hora)}</p>
               </div>
               <div className="p-3 bg-[#f5f5f7] rounded-lg border border-[#e0e0e0]">
                 <p className="text-[10px] text-[#7a7a7a] font-medium uppercase mb-1">Hora</p>
-                <p className="text-[14px] text-[#1d1d1f]">{selectedTurno && new Date(selectedTurno.fecha_hora).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} hs</p>
+                <p className="text-[14px] text-[#1d1d1f]">{selectedTurno && formatArgentinaTime(selectedTurno.fecha_hora)} hs</p>
               </div>
             </div>
 
@@ -2038,11 +2030,11 @@ export default function Dashboard() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Fecha</label>
-                  <input name="fecha" type="date" className="w-full p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" defaultValue={modalType === "editar_turno" ? new Date(selectedTurno?.fecha_hora).toISOString().split('T')[0] : ""} required />
+                  <input name="fecha" type="date" className="w-full p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" defaultValue={modalType === "editar_turno" ? toISODateArgentina(selectedTurno?.fecha_hora) : ""} required />
                 </div>
                 <div className="space-y-1">
                   <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Hora</label>
-                  <input name="hora" type="time" className="w-full p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" defaultValue={modalType === "editar_turno" ? new Date(selectedTurno?.fecha_hora).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : ""} required />
+                  <input name="hora" type="time" className="w-full p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" defaultValue={modalType === "editar_turno" ? formatArgentinaTime(selectedTurno?.fecha_hora) : ""} required />
                 </div>
               </div>
               <div className="space-y-1">
@@ -2069,7 +2061,7 @@ export default function Dashboard() {
               </div>
               <div className="space-y-1">
                 <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Fecha de Evolución</label>
-                <input name="fecha" type="date" className="w-full p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" defaultValue={new Date().toISOString().split('T')[0]} required />
+                <input name="fecha" type="date" className="w-full p-2.5 bg-[#f5f5f7] border-none rounded-full text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0066cc]" defaultValue={toISODateArgentina()} required />
               </div>
               <div className="space-y-1">
                 <label className="text-[12px] font-medium text-[#7a7a7a] uppercase">Contenido de la Evolución</label>
